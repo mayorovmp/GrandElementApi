@@ -1,20 +1,19 @@
-FROM microsoft/dotnet:2.2-aspnetcore-runtime AS base
+FROM microsoft/dotnet:3.1-aspnetcore-runtime AS base
 WORKDIR /app
-EXPOSE 80
 
-FROM microsoft/dotnet:2.2-sdk AS build
+FROM microsoft/dotnet:3.1-sdk AS build
 WORKDIR /src
-COPY ["OurGardenAPI/OurGardenAPI.csproj", "OurGardenAPI/"]
-RUN dotnet restore "OurGardenAPI/OurGardenAPI.csproj"
+COPY ["GrandElementApi.csproj", "GrandElementApi/"]
+RUN dotnet restore "GrandElementApi.csproj"
 COPY . .
-WORKDIR "/src/OurGardenAPI"
-RUN dotnet build "OurGardenAPI.csproj" -c Release -o /app
+WORKDIR "/src/GrandElementApi"
+RUN dotnet build "GrandElementApi.csproj" -c Release -o /app
 
 FROM build AS publish
-RUN dotnet publish "OurGardenAPI.csproj" -c Release -o /app
+RUN dotnet publish "GrandElementApi.csproj" -c Release -o /app
 
 FROM base AS final
 WORKDIR /app
 ENV TZ Asia/Yekaterinburg
 COPY --from=publish /app .
-ENTRYPOINT ["dotnet", "OurGardenAPI.dll"]
+ENTRYPOINT ["dotnet", "GrandElementApi.dll"]

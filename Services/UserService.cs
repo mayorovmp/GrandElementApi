@@ -1,37 +1,74 @@
 ﻿using GrandElementApi.Interfaces;
+using GrandElementApi.Models;
 using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 
 namespace GrandElementApi.Services
 {
     public class UserService : IUserService
     {
-        public async Task<bool> CheckUser(string login)
+        IConnectionService _connectionService;
+        public UserService(IConnectionService connectionService)
         {
-            var connString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
-            await using var conn = new NpgsqlConnection(connString);
-            await conn.OpenAsync();
+            _connectionService = connectionService;
+        }
 
-            // Insert some data
-            //await using (var cmd = new NpgsqlCommand("INSERT INTO data (some_field) VALUES (@p)", conn))
-            //{
-            //    cmd.Parameters.AddWithValue("p", "Hello world");
-            //    await cmd.ExecuteNonQueryAsync();
-            //}
-
-            // Retrieve all rows
-            await using (var cmd = new NpgsqlCommand("select * from users where login = 'max' and pass = '1'", conn))
-            await using (var reader = await cmd.ExecuteReaderAsync())
+        public async Task<User> GetUserAsync(string login, string pass)
+        {
+            using (var conn = _connectionService.GetConnection())
             {
-                if (reader.HasRows)
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("select id, login, pass, name from users where login = @login and pass = @pass", conn))
+                {
+                    cmd.Parameters.AddWithValue("login", login);
+                    cmd.Parameters.AddWithValue("pass", pass);
+                    var reader = await cmd.ExecuteReaderAsync();
+
+                    if (!reader.HasRows)
+                        throw new ArgumentException($"Имя {login} и пароль не найдены.");
+                    else {
+                        reader.Read();
+                        return new User() {Id = reader.GetInt32(0), Login = reader.GetString(1), Password=reader.GetString(2), Name=reader.GetString(3) };
+                    }
+                }
+            }
+        }
+
+        public async Task<bool> IsValidTokenAsync(string token)
+        {
+            using (var conn = _connectionService.GetConnection())
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("select * from sessions where token = @token", conn))
+                {
+                    cmd.Parameters.AddWithValue("token", token);
+                    var c = await cmd.ExecuteScalarAsync();
+                    if (c == null)
+                        return false;
                     return true;
-                else
-                    return false;
-                //while (await reader.ReadAsync())
-                //    Console.WriteLine(reader.GetString(0));
+                }
+            }
+        }
+
+        public async Task<Guid> MakeSessionAsync(int userId)
+        {
+            var guid = Guid.NewGuid();
+            using (var conn = _connectionService.GetConnection())
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("INSERT INTO sessions (user_id, login_date, token) VALUES (@user_id, @login_date, @guid)", conn))
+                {
+                    cmd.Parameters.AddWithValue("user_id", userId);
+                    cmd.Parameters.AddWithValue("login_date", DateTime.Now);
+                    cmd.Parameters.AddWithValue("guid", guid);
+
+                    await cmd.ExecuteNonQueryAsync();
+                    return guid;
+                }
             }
         }
     }

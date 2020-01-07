@@ -16,6 +16,47 @@ namespace GrandElementApi.Services
         {
             _connectionService = connectionService;
         }
+
+        public async Task DeleteCar(int carId)
+        {
+            using (var conn = _connectionService.GetConnection())
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("delete from cars where id = @id", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter<int>("id", carId));
+                    var affectedRows = await cmd.ExecuteNonQueryAsync();
+                }
+            }
+        }
+        public async Task<Car> AddCarAsync(Car car) {
+            using (var conn = _connectionService.GetConnection())
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("insert into cars(owner, state_number, contacts, comments, car_category_id) values (@owner, @number, @contacts, @comments, @category_id) RETURNING id", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter<string>("owner", car.Owner));
+                    cmd.Parameters.Add(new NpgsqlParameter<string>("number", car.StateNumber));
+                    cmd.Parameters.Add(new NpgsqlParameter<string>("contacts", car.Contacts));
+                    cmd.Parameters.Add(new NpgsqlParameter<string>("comments", car.Comments));
+                    if (car.CarCategory == null)
+                    {
+                        cmd.Parameters.Add(new NpgsqlParameter("category_id", DBNull.Value));
+                    }
+                    else
+                    {
+                        cmd.Parameters.Add(new NpgsqlParameter("category_id", car.CarCategory.Id));
+                    }
+                    var reader = await cmd.ExecuteReaderAsync();
+                    if (reader.Read())
+                    {
+                        car.Id = reader.GetInt32(0);
+                    }
+                    return car;
+                }
+            }
+        }
+
         public async Task<List<Car>> AllCarsAsync()
         {
             using (var conn = _connectionService.GetConnection())

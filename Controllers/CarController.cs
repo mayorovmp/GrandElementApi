@@ -23,6 +23,7 @@ namespace GrandElementApi.Controllers
             _logger = logger;
             _carService = carService;
         }
+
         [HttpGet]
         public async Task<ApiResponse> Get()
         {
@@ -30,6 +31,38 @@ namespace GrandElementApi.Controllers
             {
                 var data = await _carService.AllCarsAsync();
                 return new DataResponse<List<Car>>() { Code = ApiResponse.OK, Success = true, Data = data };
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return ApiResponse.DefaultError(e.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<ApiResponse> Add(Car car)
+        {
+            if(car.Owner == null)
+                return ApiResponse.UserError("Укажите владельца");
+            try
+            {
+                var data = await _carService.AddCarAsync(car);
+                return new DataResponse<Car>(data);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return ApiResponse.DefaultError(e.Message);
+            }
+        }
+
+        [HttpPost("delete/{carId}")]
+        public async Task<ApiResponse> Delete(int carId)
+        {
+            try
+            {
+                await _carService.DeleteCar(carId);
+                return new DataResponse<Car>();
             }
             catch (Exception e)
             {

@@ -7,7 +7,7 @@ namespace GrandElementApi.Models
 {
     public class Car
     {
-        public int Id { get; set; }
+        public int? Id { get; set; }
         public string Owner { get; set; }
         public string StateNumber { get; set; }
         public string Contacts { get; set; }

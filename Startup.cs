@@ -33,6 +33,7 @@ namespace GrandElementApi
             services.AddSingleton<ISupplierService, SupplierService>();
             services.AddSingleton<IUserService, UserService>();
             services.AddSingleton<ProductService, ProductService>();
+            services.AddSingleton<ClientService, ClientService>();
             services.AddSingleton<CarService, CarService>();
             services.AddSingleton<IConnectionService, ConnectionService>();
             services.AddControllers();

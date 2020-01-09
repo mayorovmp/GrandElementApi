@@ -21,7 +21,7 @@ namespace GrandElementApi.Services
             using (var conn = _connectionService.GetConnection())
             {
                 conn.Open();
-                using (var cmd = new NpgsqlCommand("insert into car_categories(name) values(@name) RETURNING id, name", conn))
+                using (var cmd = new NpgsqlCommand("insert into car_categories(name, row_status) values(@name, 0) RETURNING id, name", conn))
                 {
                     cmd.Parameters.AddWithValue("name", name);
                     var reader = await cmd.ExecuteReaderAsync();
@@ -43,7 +43,7 @@ namespace GrandElementApi.Services
             using (var conn = _connectionService.GetConnection())
             {
                 conn.Open();
-                using (var cmd = new NpgsqlCommand("select id, name from car_categories", conn))
+                using (var cmd = new NpgsqlCommand("select id, name from car_categories where row_status = 0", conn))
                 {
                     var reader = await cmd.ExecuteReaderAsync();
                     var categories = new List<CarCategory>();
@@ -66,7 +66,8 @@ namespace GrandElementApi.Services
             using (var conn = _connectionService.GetConnection())
             {
                 conn.Open();
-                using (var cmd = new NpgsqlCommand("delete from car_categories cc where cc.id = @id", conn))
+                //using (var cmd = new NpgsqlCommand("delete from car_categories cc where cc.id = @id", conn))
+                using (var cmd = new NpgsqlCommand("update car_categories set row_status = 1 where id = @id", conn))
                 {
                     cmd.Parameters.AddWithValue("id", carCategoryId);
                     var reader = await cmd.ExecuteNonQueryAsync();

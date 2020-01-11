@@ -37,5 +37,48 @@ namespace GrandElementApi.Controllers
                 return ApiResponse.DefaultError(e.Message);
             }
         }
+        [HttpPost]
+        public async Task<ApiResponse> Add(ProductShort product)
+        {
+            try
+            {
+                product = await _productService.AddProductAsync(product);
+                return new DataResponse<ProductShort>() { Code = ApiResponse.OK, Success = true, Data = product };
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return ApiResponse.DefaultError(e.Message);
+            }
+        }
+
+        [HttpPost("delete/{id}")]
+        public async Task<ApiResponse> Delete(int id)
+        {
+            try
+            {
+                await _productService.DeleteProductAsync(id);
+                return new DataResponse<ProductShort>() { Code = ApiResponse.OK, Success = true, Data = null };
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return ApiResponse.DefaultError(e.Message);
+            }
+        }
+        [HttpPost("edit/{id}")]
+        public async Task<ApiResponse> Edit(int id, ProductShort product)
+        {
+            try
+            {
+                var res = await _productService.EditProductAsync(product);
+                return new DataResponse<ProductShort>() { Code = ApiResponse.OK, Success = true, Data = res };
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return ApiResponse.DefaultError(e.Message);
+            }
+        }
     }
 }

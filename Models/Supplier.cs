@@ -9,7 +9,7 @@ namespace GrandElementApi.Models
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public string LegalName { get; set; }
+        public string LegalEntity { get; set; }
         public string Address { get; set; }
         public List<Product> Products { get; } = new List<Product>();
     }

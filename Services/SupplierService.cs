@@ -55,7 +55,7 @@ namespace GrandElementApi.Services
                 {
                     Id = group.Key,
                     Name = group.First().SupplierName,
-                    LegalName = group.First().LegalName,
+                    LegalEntity = group.First().LegalName,
                     Address = group.First().Address
                 };
                 foreach (var row in group)

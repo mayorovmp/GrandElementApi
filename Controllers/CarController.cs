@@ -25,25 +25,25 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ApiResponse> Get()
+        public async Task<DataResponse<List<Car>>> Get()
         {
             try
             {
                 var data = await _carService.AllCarsAsync();
-                return new DataResponse<List<Car>>() { Code = ApiResponse.OK, Success = true, Data = data };
+                return new DataResponse<List<Car>>() { Code = DataResponse<List<Car>>.OK, Success = true, Data = data };
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return ApiResponse.DefaultError(e.Message);
+                return DataResponse<List<Car>>.DefaultError(e.Message);
             }
         }
 
         [HttpPost]
-        public async Task<ApiResponse> Add(Car car)
+        public async Task<DataResponse<Car>> Add(Car car)
         {
             if(car.Owner == null)
-                return ApiResponse.UserError("Укажите владельца");
+                return DataResponse<Car>.UserError("Укажите владельца");
             try
             {
                 var data = await _carService.AddCarAsync(car);
@@ -52,22 +52,22 @@ namespace GrandElementApi.Controllers
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return ApiResponse.DefaultError(e.Message);
+                return DataResponse<Car>.DefaultError(e.Message);
             }
         }
 
-        [HttpPost("delete/{carId}")]
-        public async Task<ApiResponse> Delete(int carId)
+        [HttpDelete("{carId}")]
+        public async Task<DataResponse<object>> Delete(int carId)
         {
             try
             {
                 await _carService.DeleteCar(carId);
-                return new DataResponse<Car>();
+                return new DataResponse<object>();
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return ApiResponse.DefaultError(e.Message);
+                return DataResponse<object>.DefaultError(e.Message);
             }
         }
     }

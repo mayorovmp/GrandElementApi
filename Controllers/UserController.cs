@@ -26,22 +26,22 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ApiResponse> Login(User userReq) {
+        public async Task<DataResponse<Authorization>> Login(User userReq) {
             try
             {
                 var user = await _userService.GetUserAsync(userReq.Login, userReq.Password);
                 var guid = await _userService.MakeSessionAsync(user.Id);
-                return new DataResponse<Authorization>() { Code = ApiResponse.OK, Success = true, Data=new Authorization() { Token = guid, UserId=user.Id, Name=user.Name } };
+                return new DataResponse<Authorization>(new Authorization() { Token = guid, UserId = user.Id, Name = user.Name });
             }
             catch (ArgumentException e)
             {
                 _logger.LogInformation(e.Message);
-                return ApiResponse.DefaultError(e);
+                return DataResponse<Authorization>.DefaultError(e);
             }
             catch (Exception e)
             {
                 _logger.LogError(e.Message);
-                return ApiResponse.DefaultError();
+                return DataResponse<Authorization>.DefaultError();
             }
         }
     }

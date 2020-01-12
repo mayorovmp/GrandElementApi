@@ -25,47 +25,47 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ApiResponse> Get()
+        public async Task<DataResponse<List<CarCategory>>> Get()
         {
             try
             {
                 var categories = await _carCategoryService.AllCategoriesAsync();
-                return new DataResponse<List<CarCategory>>() { Code = ApiResponse.OK, Success = true, Data = categories };
+                return new DataResponse<List<CarCategory>>() { Code = DataResponse<List<CarCategory>>.OK, Success = true, Data = categories };
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return ApiResponse.DefaultError();
+                return DataResponse<List<CarCategory>>.DefaultError();
             }
         }
 
         [HttpPost]
-        public async Task<ApiResponse> Add(CarCategory categoryReq)
+        public async Task<DataResponse<CarCategory>> Add(CarCategory categoryReq)
         {
             try
             {
                 var category = await _carCategoryService.AddCategoryAsync(categoryReq.Name);
-                return new DataResponse<CarCategory>() { Code = ApiResponse.OK, Success = true, Data = category };
+                return new DataResponse<CarCategory>() { Code = DataResponse<CarCategory>.OK, Success = true, Data = category };
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return ApiResponse.DefaultError(e.Message);
+                return DataResponse<CarCategory>.DefaultError(e.Message);
             }
         }
 
-        [HttpPost("delete/{id}")]
-        public async Task<ApiResponse> Delete(int id)
+        [HttpDelete("{id}")]
+        public async Task<DataResponse<object>> Delete(int id)
         {
             try
             {
                 await _carCategoryService.DeleteCategoryAsync(id);
-                return new DataResponse<CarCategory>() { Code = ApiResponse.OK, Success = true, Data = null };
+                return new DataResponse<object>(null) ;
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return ApiResponse.DefaultError(e.Message);
+                return DataResponse<object>.DefaultError(e.Message);
             }
         }
     }

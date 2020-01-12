@@ -25,43 +25,19 @@ namespace GrandElementApi.Controllers
         }
         // GET: Client
         [HttpGet]
-        public async Task<ApiResponse> Get()
+        public async Task<DataResponse<List<Client>>> Get()
         {
             try
             {
                 var res = await _clientService.AllClientsAsync();
-                return new DataResponse<List<Client>>() { Code = ApiResponse.OK, Success = true, Data = res };
+                return new DataResponse<List<Client>>() { Code = DataResponse<object>.OK, Success = true, Data = res };
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return ApiResponse.DefaultError(e.Message);
+                return DataResponse<List<Client>>.DefaultError(e);
             }
         }
 
-        // GET: Client/5
-        [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
-        {
-            return "value";
-        }
-
-        // POST: Client
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
-
-        // PUT: Client/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE: ApiWithActions/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
     }
 }

@@ -25,31 +25,31 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ApiResponse> Add(Supplier supplier)
+        public async Task<DataResponse<Supplier>> Add(Supplier supplier)
         {
             try
             {
                 var suppliers = await _supplierService.AllSuppliersAsync();
-                return new DataResponse<Supplier>() { Code = ApiResponse.OK, Success = true, Data = supplier };
+                return new DataResponse<Supplier>(supplier);
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return ApiResponse.DefaultError(e.Message);
+                return DataResponse<Supplier>.DefaultError(e.Message);
             }
         }
         [HttpGet]
-        public async Task<ApiResponse> Get()
+        public async Task<DataResponse<List<Supplier>>> Get()
         {
             try
             {
                 var suppliers = await _supplierService.AllSuppliersAsync();
-                return new DataResponse<List<Supplier>>() { Code = ApiResponse.OK, Success = true, Data = suppliers };
+                return new DataResponse<List<Supplier>>(suppliers);
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return ApiResponse.DefaultError(e.Message);
+                return DataResponse<List<Supplier>>.DefaultError(e.Message);
             }
         }
     }

@@ -24,60 +24,59 @@ namespace GrandElementApi.Controllers
             _productService = productService;
         }
         [HttpGet]
-        public async Task<ApiResponse> Get()
+        public async Task<DataResponse<List<ProductShort>>> Get()
         {
             try
             {
                 var products = await _productService.AllProductsAsync();
-                return new DataResponse<List<ProductShort>>() { Code = ApiResponse.OK, Success = true, Data = products };
+                return new DataResponse<List<ProductShort>>(products);
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return ApiResponse.DefaultError(e.Message);
+                return DataResponse<List<ProductShort>>.DefaultError(e.Message);
             }
         }
         [HttpPost]
-        public async Task<ApiResponse> Add(ProductShort product)
+        public async Task<DataResponse<ProductShort>> Add(ProductShort product)
         {
             try
             {
                 product = await _productService.AddProductAsync(product);
-                return new DataResponse<ProductShort>() { Code = ApiResponse.OK, Success = true, Data = product };
+                return new DataResponse<ProductShort>(product);
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return ApiResponse.DefaultError(e.Message);
+                return DataResponse<ProductShort>.DefaultError(e.Message);
             }
         }
-
-        [HttpPost("delete/{id}")]
-        public async Task<ApiResponse> Delete(int id)
+        [HttpDelete("{id}")]
+        public async Task<DataResponse<object>> Delete(int id)
         {
             try
             {
                 await _productService.DeleteProductAsync(id);
-                return new DataResponse<ProductShort>() { Code = ApiResponse.OK, Success = true, Data = null };
+                return new DataResponse<object>(null);
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return ApiResponse.DefaultError(e.Message);
+                return DataResponse<object>.DefaultError(e.Message);
             }
         }
-        [HttpPost("edit/{id}")]
-        public async Task<ApiResponse> Edit(int id, ProductShort product)
+        [HttpPut]
+        public async Task<DataResponse<ProductShort>> Edit(ProductShort product)
         {
             try
             {
                 var res = await _productService.EditProductAsync(product);
-                return new DataResponse<ProductShort>() { Code = ApiResponse.OK, Success = true, Data = res };
+                return new DataResponse<ProductShort>(res);
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return ApiResponse.DefaultError(e.Message);
+                return DataResponse<ProductShort>.DefaultError(e.Message);
             }
         }
     }

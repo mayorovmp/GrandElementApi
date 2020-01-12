@@ -56,7 +56,7 @@ namespace GrandElementApi.Middlewares
             context.Response.StatusCode = 200;
             context.Response.ContentType = MediaTypeNames.Application.Json;
 
-            var resp = new ApiResponse() { Success = false, Message = "Не авторизирован", Code = ApiResponse.UNAUTHORIZED };
+            var resp = new DataResponse<object>() { Success = false, Message = "Не авторизированный запрос", Code = DataResponse<object>.UNAUTHORIZED };
 
             var settings = new JsonSerializerSettings();
             settings.ContractResolver = new CamelCasePropertyNamesContractResolver();

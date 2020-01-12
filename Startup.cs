@@ -40,7 +40,7 @@ namespace GrandElementApi
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Grand Element API", Version = "v1", Description= "Метод Post-добавляет данные, метод Put-изменяет данные, метод Get-получение данных, метод Delete-удаление данных." });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Grand Element API", Version = "v1", Description= "Post-create data, Put-update data, Get-retrieve data, Delete-remove one element." });
             });
         }
 

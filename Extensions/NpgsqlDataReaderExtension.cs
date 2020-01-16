@@ -20,5 +20,17 @@ namespace GrandElementApi.Extensions
                 return reader.GetInt32(colIndex);
             return null;
         }
+        public static decimal? SafeGetDecimal(this NpgsqlDataReader reader, int colIndex)
+        {
+            if (!reader.IsDBNull(colIndex))
+                return reader.GetDecimal(colIndex);
+            return null;
+        }
+        public static DateTime? SafeGetDateTime(this NpgsqlDataReader reader, int colIndex)
+        {
+            if (!reader.IsDBNull(colIndex))
+                return reader.GetDateTime(colIndex);
+            return null;
+        }
     }
 }

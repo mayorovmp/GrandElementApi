@@ -5,11 +5,14 @@ using System.Threading.Tasks;
 
 namespace GrandElementApi.Models
 {
-    public class Client
+    public class Client: ClientShort
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
         public List<Address> Addresses { get; set; }
+    }
+    public class ClientShort
+    {
+        public int? Id { get; set; }
+        public string Name { get; set; }
     }
     public class Address {
         public int? Id { get; set; }
@@ -21,4 +24,5 @@ namespace GrandElementApi.Models
         public string Name { get; set; }
         public string Communication { get; set; }
     }
+
 }

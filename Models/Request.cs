@@ -22,6 +22,7 @@ namespace GrandElementApi.Models
         public decimal? Profit { get; set; }
         public ClientShort Client { get; set; }
         public Car Car { get; set; }
+        public string Status { get; set; }
 
     }
 }

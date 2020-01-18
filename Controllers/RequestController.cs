@@ -37,5 +37,20 @@ namespace GrandElementApi.Controllers
                 return DataResponse<List<Request>>.DefaultError(e.Message);
             }
         }
+
+        [HttpGet("{date}")]
+        public async Task<DataResponse<List<Request>>> GetByDate(DateTime date)
+        {
+            try
+            {
+                var requests = await _requestService.GetRequestsAsync(date);
+                return new DataResponse<List<Request>>(requests);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return DataResponse<List<Request>>.DefaultError(e.Message);
+            }
+        }
     }
 }

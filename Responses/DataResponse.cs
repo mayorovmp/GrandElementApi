@@ -32,7 +32,7 @@ namespace GrandElementApi.Responses
         }
         public static DataResponse<T> DefaultError(String mess = "Ошибка сервера.")
         {
-            return new DataResponse<T>() { Code = "", Message = mess, Success = false };
+            return new DataResponse<T>() { Code = BAD_REQUEST, Message = mess, Success = false };
         }
         public static DataResponse<T> UserError(String mess = "Некорректный ввод.")
         {

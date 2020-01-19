@@ -35,13 +35,6 @@ namespace GrandElementApi.Middlewares
                 return;
             }
 
-            //
-            if (context.Request.Method == "OPTIONS")
-            {
-                await _next(context);
-                return;
-            }
-
             var tokenHeaders = context.Request.Headers["Authorization"];
             if (tokenHeaders.Count > 0)
             {

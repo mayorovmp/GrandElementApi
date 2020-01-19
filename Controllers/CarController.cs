@@ -56,6 +56,26 @@ namespace GrandElementApi.Controllers
             }
         }
 
+        [HttpPut]
+        public async Task<DataResponse<Car>> Edit(Car car)
+        {
+            try
+            {
+                var data = await _carService.EditCarAsync(car);
+                return new DataResponse<Car>(data);
+            }
+            catch (Npgsql.PostgresException e)
+            {
+                _logger.LogError(e.ToString());
+                return DataResponse<Car>.DefaultError();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return DataResponse<Car>.DefaultError(e.Message);
+            }
+        }
+
         [HttpDelete("{carId}")]
         public async Task<DataResponse<object>> Delete(int carId)
         {
@@ -63,6 +83,11 @@ namespace GrandElementApi.Controllers
             {
                 await _carService.DeleteCar(carId);
                 return new DataResponse<object>();
+            }
+            catch (Npgsql.PostgresException e)
+            {
+                _logger.LogError(e.ToString());
+                return DataResponse<object>.DefaultError();
             }
             catch (Exception e)
             {

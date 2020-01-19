@@ -22,7 +22,7 @@ namespace GrandElementApi.Services
             using (var conn = _connectionService.GetConnection())
             {
                 conn.Open();
-                using (var cmd = new NpgsqlCommand("delete from cars where id = @id", conn))
+                using (var cmd = new NpgsqlCommand("update cars set row_status=1 where id = @id", conn))
                 {
                     cmd.Parameters.Add(new NpgsqlParameter<int>("id", carId));
                     var affectedRows = await cmd.ExecuteNonQueryAsync();

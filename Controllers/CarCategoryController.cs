@@ -54,6 +54,21 @@ namespace GrandElementApi.Controllers
             }
         }
 
+        [HttpPut]
+        public async Task<DataResponse<CarCategory>> Edit(CarCategory categoryReq)
+        {
+            try
+            {
+                var category = await _carCategoryService.EditCategoryAsync(categoryReq);
+                return new DataResponse<CarCategory>() { Code = DataResponse<CarCategory>.OK, Success = true, Data = category };
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return DataResponse<CarCategory>.DefaultError(e.Message);
+            }
+        }
+
         [HttpDelete("{id}")]
         public async Task<DataResponse<object>> Delete(int id)
         {

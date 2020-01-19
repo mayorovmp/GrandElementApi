@@ -1,4 +1,5 @@
-﻿using GrandElementApi.Interfaces;
+﻿using GrandElementApi.Extensions;
+using GrandElementApi.Interfaces;
 using GrandElementApi.Models;
 using Npgsql;
 using System;
@@ -56,9 +57,34 @@ namespace GrandElementApi.Services
             }
         }
 
-        public Task<CarCategory> EditCategoryAsync(int carCategoryId, string newName)
+        public async Task<CarCategory> EditCategoryAsync(CarCategory category)
         {
-            throw new NotImplementedException();
+
+            int id;
+            if (category.Id.HasValue)
+                id = category.Id.Value;
+            else
+                throw new ArgumentException("Идентификатор записи пустой");
+
+            using (var conn = _connectionService.GetConnection())
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("update car_categories set name = @name where id=@id returning id, name", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter<string>("name", category.Name));
+                    cmd.Parameters.Add(new NpgsqlParameter<int>("id", id));
+                    var reader = await cmd.ExecuteReaderAsync();
+                    if (reader.HasRows)
+                    {
+                        reader.Read();
+                        return new CarCategory() { Id = reader.SafeGetInt32(0), Name = reader.SafeGetString(1) };
+                    }
+                    else
+                    {
+                        throw new Exception("Запись не изменена");
+                    }
+                }
+            }
         }
 
         public async Task DeleteCategoryAsync(int carCategoryId)

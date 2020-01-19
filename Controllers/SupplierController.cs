@@ -52,5 +52,25 @@ namespace GrandElementApi.Controllers
                 return DataResponse<List<Supplier>>.DefaultError(e.Message);
             }
         }
+
+        [HttpDelete("{id}")]
+        public async Task<DataResponse<object>> Delete(int id)
+        {
+            try
+            {
+                await _supplierService.DeleteSupplierAsync(id);
+                return new DataResponse<object>();
+            }
+            catch (Npgsql.PostgresException e)
+            {
+                _logger.LogError(e.ToString());
+                return DataResponse<object>.DefaultError();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return DataResponse<object>.DefaultError(e.Message);
+            }
+        }
     }
 }

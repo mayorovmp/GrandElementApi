@@ -31,7 +31,7 @@ namespace GrandElementApi.Services
             {
                 conn.Open();
                 using (var cmd = new NpgsqlCommand("select s.id, s.name, s.legal_entity, s.address, sp.price, sp.product_id, p.name from suppliers s " +
-                    "left join supplier_product sp on s.id = sp.supplier_id left join products p on sp.product_id = p.id", conn))
+                    "left join supplier_product sp on s.id = sp.supplier_id left join products p on sp.product_id = p.id where s.row_status=0", conn))
                 {
                     var reader = await cmd.ExecuteReaderAsync();
                     while (reader.Read())
@@ -70,9 +70,17 @@ namespace GrandElementApi.Services
             return suppliers;
         }
 
-        public Task DeleteSupplierAsync(int carCategoryId)
+        public async Task DeleteSupplierAsync(int id)
         {
-            throw new NotImplementedException();
+            using (var conn = _connectionService.GetConnection())
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("update suppliers set row_status = 1 where id = @id", conn))
+                {
+                    cmd.Parameters.AddWithValue("id", id);
+                    var reader = await cmd.ExecuteNonQueryAsync();
+                }
+            }
         }
 
         public Task<Supplier> EditSupplierAsync(Supplier supplier)

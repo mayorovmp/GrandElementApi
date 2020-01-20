@@ -23,12 +23,12 @@ namespace GrandElementApi.Services
             {
                 conn.Open();
                 using (var cmd = new NpgsqlCommand(@"
-select r.id, p.id, p.name, da.id, da.name, s.id, s.name, r.amount,
+select r.id, p.id, p.name, da.id, da.name, s.id, s.name, r.amount_out,
        r.delivery_start, r.delivery_end,
        r.purchase_price, r.selling_price, r.freight_price, r.unit, r.freight_cost, r.profit,
        c.id, c.name,
        cs.id, cs.owner, cs.state_number, cs.contacts, cs.comments,
-       cc.id, cc.name, rs.description
+       cc.id, cc.name, rs.description, r.amount_in
 from requests r
     left join orders o on r.order_id = o.id
     left join products p on r.product_id = p.id
@@ -60,12 +60,12 @@ from requests r
             {
                 conn.Open();
                 using (var cmd = new NpgsqlCommand(@"
-select r.id, p.id, p.name, da.id, da.name, s.id, s.name, r.amount,
+select r.id, p.id, p.name, da.id, da.name, s.id, s.name, r.amount_out,
        r.delivery_start, r.delivery_end,
        r.purchase_price, r.selling_price, r.freight_price, r.unit, r.freight_cost, r.profit,
        c.id, c.name,
        cs.id, cs.owner, cs.state_number, cs.contacts, cs.comments,
-       cc.id, cc.name, rs.description
+       cc.id, cc.name, rs.description, r.amount_in
 from requests r
     left join orders o on r.order_id = o.id
     left join products p on r.product_id = p.id
@@ -100,7 +100,7 @@ from requests r
                 Product = rdr.SafeGetInt32(1) != null ? new Product() { Id = rdr.SafeGetInt32(1), Name = rdr.SafeGetString(2) } : null,
                 DeliveryAddress = rdr.SafeGetInt32(3) != null ? new Address() { Id = rdr.SafeGetInt32(3), Name = rdr.SafeGetString(4) } : null,
                 Supplier = rdr.SafeGetInt32(5) != null ? new Supplier() { Id = rdr.SafeGetInt32(5), Name = rdr.SafeGetString(6) } : null,
-                Amount = rdr.SafeGetDecimal(7),
+                AmountOut = rdr.SafeGetDecimal(7),
                 DeliveryStart = rdr.SafeGetDateTime(8),
                 DeliveryEnd = rdr.SafeGetDateTime(9),
                 PurchasePrice = rdr.SafeGetDecimal(10),
@@ -119,7 +119,8 @@ from requests r
                     Comments = rdr.SafeGetString(22),
                     CarCategory = rdr.SafeGetInt32(23) != null ? new CarCategory() { Id = rdr.SafeGetInt32(23), Name = rdr.SafeGetString(24) } : null
                 } : null,
-                Status = rdr.SafeGetString(25)
+                Status = rdr.SafeGetString(25),
+                AmountIn = rdr.SafeGetDecimal(26),
             };
         }
     }

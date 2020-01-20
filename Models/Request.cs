@@ -11,7 +11,8 @@ namespace GrandElementApi.Models
         public ProductShort Product { get; set; }
         public Address DeliveryAddress { get; set; }
         public Supplier Supplier { get; set; }
-        public decimal? Amount { get; set; }
+        public decimal? AmountOut { get; set; }
+        public decimal? AmountIn { get; set; }
         public DateTime? DeliveryStart { get; set; }
         public DateTime? DeliveryEnd { get; set; }
         public decimal? PurchasePrice { get; set; }

@@ -29,7 +29,7 @@ namespace GrandElementApi.Controllers
         {
             try
             {
-                var suppliers = await _supplierService.AllSuppliersAsync();
+                supplier = await _supplierService.AddSupplierAsync(supplier);
                 return new DataResponse<Supplier>(supplier);
             }
             catch (Exception e)

@@ -49,6 +49,14 @@ namespace GrandElementApi
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
 
+            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            app.UseSwagger();
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+            // specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Grand Element API V1");
+            });
             app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
             // Check autorization
@@ -62,14 +70,6 @@ namespace GrandElementApi
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-            });
-            // Enable middleware to serve generated Swagger as a JSON endpoint.
-            app.UseSwagger();
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
-            // specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Grand Element API V1");
             });
         }
     }

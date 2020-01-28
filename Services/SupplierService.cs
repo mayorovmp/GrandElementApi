@@ -34,40 +34,40 @@ namespace GrandElementApi.Services
                         supplier.Id = reader.GetInt32(0);
                     }
                     else {
-                        throw new Exception("Не создано");
+                        throw new Exception("Запись не создана");
                     }
                 }
             }
-            // List<Task<NpgsqlDataReader>> readersTask = new List<Task<NpgsqlDataReader>>();
+            var supProdTasks = new List<Task>();
             foreach (var prod in supplier.Products)
             {
-                if (!prod.Id.HasValue)
-                    continue;
-                int id = prod.Id.Value;
+                supProdTasks.Add(AddSupplierProductAsync(prod, supplier.Id.Value));
+            }
+            await Task.WhenAll(supProdTasks);
+            return supplier;
+        }
 
-                using (var conn = _connectionService.GetConnection())
-                {
-                    conn.Open();
-                    using (var cmd = new NpgsqlCommand(@"
+        private async Task AddSupplierProductAsync(Product prod, int supplierId)
+        {
+            if (!prod.Id.HasValue)
+            {
+                throw new Exception("Идентификатор товара не может быть пустым");
+            }
+            using (var conn = _connectionService.GetConnection())
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand(@"
 insert into supplier_product(supplier_id, product_id, price) values(@supId, @prodId, @price) 
 RETURNING supplier_id, product_id, price", conn))
-                    {
-                        cmd.Parameters.Add(new NpgsqlParameter<int>("prodId", id));
-                        cmd.Parameters.Add(new NpgsqlParameter<int>("supId", supplier.Id.Value));
-                        if (prod.Price == null)
-                        {
-                            cmd.Parameters.Add(new NpgsqlParameter("price", DBNull.Value));
-                        }
-                        else
-                        {
-                            cmd.Parameters.Add(new NpgsqlParameter("price", prod.Price));
-                        }
-                        await cmd.ExecuteReaderAsync();
-                    }
+                {
+                    cmd.Parameters.AddRange(new [] { 
+                        new NpgsqlParameter<int>("prodId", prod.Id.Value),
+                        new NpgsqlParameter<int>("supId", supplierId),
+                        prod.Price == null ? new NpgsqlParameter("price", DBNull.Value) : new NpgsqlParameter("price", prod.Price)
+                    });
+                    await cmd.ExecuteNonQueryAsync();
                 }
             }
-                // var readers = await Task.WhenAll(readersTask);
-            return supplier;
         }
 
         public async Task<List<Supplier>> AllSuppliersAsync()
@@ -79,8 +79,13 @@ RETURNING supplier_id, product_id, price", conn))
             using (var conn = _connectionService.GetConnection())
             {
                 conn.Open();
-                using (var cmd = new NpgsqlCommand("select s.id, s.name, s.legal_entity, s.address, sp.price, sp.product_id, p.name from suppliers s " +
-                    "left join supplier_product sp on s.id = sp.supplier_id left join products p on sp.product_id = p.id where s.row_status=0", conn))
+                using (var cmd = new NpgsqlCommand(@"
+select s.id, s.name, s.legal_entity, s.address, sp.price, sp.product_id, p.name
+from suppliers s
+    left join supplier_product sp on s.id = sp.supplier_id and sp.row_status = 0
+    left join products p on p.id = sp.product_id
+where s.row_status=0
+", conn))
                 {
                     var reader = await cmd.ExecuteReaderAsync();
                     while (reader.Read())
@@ -127,8 +132,14 @@ RETURNING supplier_id, product_id, price", conn))
             using (var conn = _connectionService.GetConnection())
             {
                 conn.Open();
-                using (var cmd = new NpgsqlCommand("select s.id, s.name, s.legal_entity, s.address, sp.price, sp.product_id, p.name from suppliers s " +
-                    "left join supplier_product sp on s.id = sp.supplier_id left join products p on sp.product_id = p.id where s.row_status=0 where s.id = @id", conn))
+                using (var cmd = new NpgsqlCommand(@"
+select s.id, s.name, s.legal_entity, s.address, sp.price, sp.product_id, p.name
+from suppliers s
+    left join supplier_product sp on s.id = sp.supplier_id and sp.row_status=0
+    left join products p on p.id = sp.product_id
+where s.id = @id
+and s.row_status=0
+", conn))
                 {
                     cmd.Parameters.AddWithValue("id", NpgsqlDbType.Integer, id);
                     var reader = await cmd.ExecuteReaderAsync();
@@ -155,7 +166,8 @@ RETURNING supplier_id, product_id, price", conn))
                 Id = rows.First().SupplierId,
                 Name = rows.First().SupplierName,
                 LegalEntity = rows.First().LegalName,
-                Address = rows.First().Address
+                Address = rows.First().Address,
+                Products = new List<Product>()
             };
             foreach (var row in rows)
             {
@@ -179,9 +191,70 @@ RETURNING supplier_id, product_id, price", conn))
             }
         }
 
-        public Task<Supplier> EditSupplierAsync(Supplier supplier)
+        private async Task DeleteSupplierProductAsync(int supplierId)
         {
-            throw new NotImplementedException();
+            using (var conn = _connectionService.GetConnection())
+            {
+                conn.Open();//legal_entity, address, name
+                using (var cmd = new NpgsqlCommand(@"
+update supplier_product set 
+row_status=1
+where supplier_id = @id", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter<int>("id", supplierId));
+                    var updatedRowsCnt = await cmd.ExecuteNonQueryAsync();
+                }
+            }
+        }
+
+        private async Task UpdateSupplierAsync(Supplier supplier) {
+
+            using (var conn = _connectionService.GetConnection())
+            {
+                conn.Open();//legal_entity, address, name
+                using (var cmd = new NpgsqlCommand(@"
+update suppliers set 
+legal_entity=@legal_entity, 
+address=@address,
+name=@name
+where id = @id returning id, name, legal_entity, address", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter<int>("id", supplier.Id.Value));
+                    cmd.Parameters.Add(new NpgsqlParameter<string>("legal_entity", supplier.LegalEntity));
+                    cmd.Parameters.Add(new NpgsqlParameter<string>("name", supplier.Name));
+                    cmd.Parameters.Add(new NpgsqlParameter<string>("address", supplier.Address));
+                    var reader = await cmd.ExecuteReaderAsync();
+                    if (!reader.HasRows)
+                    {
+                        throw new Exception("Запись не изменена");
+                    }
+                }
+            }
+        }
+
+        public async Task<Supplier> EditSupplierAsync(Supplier supplier)
+        {
+            if (supplier == null)
+                throw new ArgumentNullException("Поставщик не может быть null");
+
+            int id;
+            if (supplier.Id.HasValue)
+                id = supplier.Id.Value;
+            else
+                throw new ArgumentException("Идентификатор записи пустой");
+
+            var deleteSupProdTask = DeleteSupplierProductAsync(id);
+            var updateSupTask = UpdateSupplierAsync(supplier);
+
+            await Task.WhenAll(new []{ deleteSupProdTask, updateSupTask });
+
+            var supProdTasks = new List<Task>();
+            foreach (var prod in supplier.Products)
+            {
+                supProdTasks.Add(AddSupplierProductAsync(prod, supplier.Id.Value));
+            }
+            await Task.WhenAll(supProdTasks);
+            return await GetSupplier(id);
         }
 
         private class SupplierProductRow {

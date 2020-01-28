@@ -52,7 +52,25 @@ namespace GrandElementApi.Controllers
                 return DataResponse<List<Supplier>>.DefaultError(e.Message);
             }
         }
-
+        [HttpPut]
+        public async Task<DataResponse<Supplier>> Edit(Supplier supplier)
+        {
+            try
+            {
+                var data = await _supplierService.EditSupplierAsync(supplier);
+                return new DataResponse<Supplier>(data);
+            }
+            catch (Npgsql.PostgresException e)
+            {
+                _logger.LogError(e.ToString());
+                return DataResponse<Supplier>.DefaultError();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return DataResponse<Supplier>.DefaultError(e.Message);
+            }
+        }
         [HttpDelete("{id}")]
         public async Task<DataResponse<object>> Delete(int id)
         {

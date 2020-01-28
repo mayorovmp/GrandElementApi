@@ -16,6 +16,89 @@ namespace GrandElementApi.Services
         {
             _connectionService = connectionService;
         }
+        public async Task DeleteClient(int id)
+        {
+            using (var conn = _connectionService.GetConnection())
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("update clients set row_status=1 where id = @id", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter<int>("id", id));
+                    var affectedRows = await cmd.ExecuteNonQueryAsync();
+                }
+            }
+        }
+        public async Task<Client> AddClient(Client client)
+        {
+            using (var conn = _connectionService.GetConnection())
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("insert into clients(name) values(@name) returning id", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter<string>("name", client.Name));
+                    var reader = await cmd.ExecuteReaderAsync();
+                    if (reader.HasRows)
+                    {
+                        reader.Read();
+                        client.Id = reader.SafeGetInt32(0);
+                    }
+                }
+            }
+            using (var conn = _connectionService.GetConnection())
+            {
+                conn.Open();
+                foreach (var addr in client.Addresses)
+                {
+                    using (var cmd = new NpgsqlCommand("insert into delivery_address(name, client_id) values(@name, @client_id) returning id", conn))
+                    {
+                        cmd.Parameters.Add(new NpgsqlParameter<string>("name", addr.Name));
+                        cmd.Parameters.Add(new NpgsqlParameter<int>("client_id", client.Id.Value));
+                        var reader = await cmd.ExecuteReaderAsync();
+                        if (reader.HasRows)
+                        {
+                            reader.Read();
+                            addr.Id = reader.SafeGetInt32(0);
+                        }
+                    }
+                    var addContactsTasks = new LinkedList<Task>();
+                    foreach (var contact in addr.Contacts)
+                    {
+                        var task = AddDeliveryContactAsync(contact, addr.Id.Value);
+                        addContactsTasks.AddLast(task);
+                    }
+                    await Task.WhenAll(addContactsTasks);
+                }
+            }
+            return client;
+        }
+
+        private async Task AddDeliveryContactAsync(Contact contact, int addrId)
+        {
+            using (var conn = _connectionService.GetConnection())
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand(@"
+insert into delivery_contacts(name, communication, delivery_address_id) 
+values(@name, @communication, @delivery_address_id ) returning id", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter<string>("name", contact.Name));
+                    cmd.Parameters.Add(new NpgsqlParameter<string>("communication", contact.Communication));
+                    cmd.Parameters.Add(new NpgsqlParameter<int>("delivery_address_id", addrId));
+                    var reader = await cmd.ExecuteReaderAsync();
+                    if (reader.HasRows)
+                    {
+                        reader.Read();
+                        int id = reader.GetInt32(0);
+                        contact.Id = id;
+                    }
+                    else
+                        throw new Exception("Контакт не создан");
+                }
+            }
+        }
+
+
+
 
         public async Task<List<Client>> AllClientsAsync()
         {

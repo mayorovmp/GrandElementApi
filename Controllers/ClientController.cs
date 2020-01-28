@@ -39,5 +39,38 @@ namespace GrandElementApi.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<DataResponse<Client>> Add(Client client)
+        {
+            try
+            {
+                var data = await _clientService.AddClient(client);
+                return new DataResponse<Client>(data);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return DataResponse<Client>.DefaultError(e.Message);
+            }
+        }
+        [HttpDelete("{id}")]
+        public async Task<DataResponse<object>> Delete(int id)
+        {
+            try
+            {
+                await _clientService.DeleteClient(id);
+                return new DataResponse<object>();
+            }
+            catch (Npgsql.PostgresException e)
+            {
+                _logger.LogError(e.ToString());
+                return DataResponse<object>.DefaultError();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return DataResponse<object>.DefaultError(e.Message);
+            }
+        }
     }
 }

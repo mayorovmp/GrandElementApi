@@ -235,7 +235,7 @@ where id = @id returning id, name, legal_entity, address", conn))
         public async Task<Supplier> EditSupplierAsync(Supplier supplier)
         {
             if (supplier == null)
-                throw new ArgumentNullException("Поставщик не может быть null");
+                throw new ArgumentNullException("Поставщик не может быть пустым");
 
             int id;
             if (supplier.Id.HasValue)

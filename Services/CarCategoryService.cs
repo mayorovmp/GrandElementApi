@@ -92,7 +92,6 @@ namespace GrandElementApi.Services
             using (var conn = _connectionService.GetConnection())
             {
                 conn.Open();
-                //using (var cmd = new NpgsqlCommand("delete from car_categories cc where cc.id = @id", conn))
                 using (var cmd = new NpgsqlCommand("update car_categories set row_status = 1 where id = @id", conn))
                 {
                     cmd.Parameters.AddWithValue("id", carCategoryId);

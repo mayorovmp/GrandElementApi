@@ -28,6 +28,24 @@ namespace GrandElementApi.Services
                 }
             }
         }
+        public async Task<Client> EditClientAsync(Client client)
+        {
+            using (var conn = _connectionService.GetConnection())
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("update clients set name=@name where id = @id returning id, name", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter<int>("id", client.Id.Value));
+                    cmd.Parameters.Add(new NpgsqlParameter<string>("name", client.Name));
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
+            var delDeliveryAddrTask = DeleteDeliveryAddressesAsync(client);
+            var addDeliveryAddeTask = AddDeliveryAddressAsync(client);
+            await delDeliveryAddrTask;
+            await addDeliveryAddeTask;
+            return client;
+        }
         public async Task<Client> AddClient(Client client)
         {
             using (var conn = _connectionService.GetConnection())
@@ -44,11 +62,15 @@ namespace GrandElementApi.Services
                     }
                 }
             }
-            using (var conn = _connectionService.GetConnection())
-            {
-                conn.Open();
-                foreach (var addr in client.Addresses)
+            await AddDeliveryAddressAsync(client);
+            return client;
+        }
+
+        private async Task AddDeliveryAddressAsync(Client client) {
+            foreach (var addr in client.Addresses) { 
+                using (var conn = _connectionService.GetConnection())
                 {
+                    conn.Open();
                     using (var cmd = new NpgsqlCommand("insert into delivery_address(name, client_id) values(@name, @client_id) returning id", conn))
                     {
                         cmd.Parameters.Add(new NpgsqlParameter<string>("name", addr.Name));
@@ -60,16 +82,52 @@ namespace GrandElementApi.Services
                             addr.Id = reader.SafeGetInt32(0);
                         }
                     }
-                    var addContactsTasks = new LinkedList<Task>();
-                    foreach (var contact in addr.Contacts)
-                    {
-                        var task = AddDeliveryContactAsync(contact, addr.Id.Value);
-                        addContactsTasks.AddLast(task);
-                    }
-                    await Task.WhenAll(addContactsTasks);
+                }
+                var addContactsTasks = new LinkedList<Task>();
+                foreach (var contact in addr.Contacts)
+                {
+                    var task = AddDeliveryContactAsync(contact, addr.Id.Value);
+                    addContactsTasks.AddLast(task);
+                }
+                await Task.WhenAll(addContactsTasks);
+            }
+        }
+
+        private async Task DeleteDeliveryAddressesAsync(Client client) {
+            var deleteDeliveryContactsTasks = new List<Task>();
+            foreach (var addr in client.Addresses) {
+                deleteDeliveryContactsTasks.Add(DeleteDeliveryContactsAsync(addr.Id.Value));
+            }
+
+            using (var conn = _connectionService.GetConnection())
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand(@"
+update delivery_address set 
+row_status=1
+where client_id = @id", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter<int>("id", client.Id.Value));
+                    var updatedRowsCnt = await cmd.ExecuteNonQueryAsync();
                 }
             }
-            return client;
+            await Task.WhenAll(deleteDeliveryContactsTasks);
+        }
+
+        private async Task DeleteDeliveryContactsAsync(int deliveryAddressId)
+        {
+            using (var conn = _connectionService.GetConnection())
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand(@"
+update delivery_contacts set 
+row_status=1
+where delivery_address_id = @id", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter<int>("id", deliveryAddressId));
+                    var updatedRowsCnt = await cmd.ExecuteNonQueryAsync();
+                }
+            }
         }
 
         private async Task AddDeliveryContactAsync(Contact contact, int addrId)
@@ -96,18 +154,16 @@ values(@name, @communication, @delivery_address_id ) returning id", conn))
                 }
             }
         }
-
-
-
-
         public async Task<List<Client>> AllClientsAsync()
         {
             var data = new List<ClientRow>();
             using (var conn = _connectionService.GetConnection())
             {
                 conn.Open();
-                using (var cmd = new NpgsqlCommand(@"select c.id, c.name, da.id, da.name, dc.id, dc.name, dc.communication
-from clients c left join delivery_address da on c.id = da.client_id left join delivery_contacts dc on da.id = dc.delivery_address_id
+                using (var cmd = new NpgsqlCommand(@"
+select c.id, c.name, da.id, da.name, dc.id, dc.name, dc.communication
+from clients c left join delivery_address da on c.id = da.client_id and da.row_status=0
+left join delivery_contacts dc on da.id = dc.delivery_address_id and dc.row_status=0
 where c.row_status=0", conn))
                 {
                     var reader = await cmd.ExecuteReaderAsync();

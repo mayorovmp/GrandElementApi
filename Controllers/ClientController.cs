@@ -38,7 +38,25 @@ namespace GrandElementApi.Controllers
                 return DataResponse<List<Client>>.DefaultError(e);
             }
         }
-
+        [HttpPut]
+        public async Task<DataResponse<Client>> Edit(Client client)
+        {
+            try
+            {
+                var data = await _clientService.EditClientAsync(client);
+                return new DataResponse<Client>(data);
+            }
+            catch (Npgsql.PostgresException e)
+            {
+                _logger.LogError(e.ToString());
+                return DataResponse<Client>.DefaultError();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return DataResponse<Client>.DefaultError(e.Message);
+            }
+        }
         [HttpPost]
         public async Task<DataResponse<Client>> Add(Client client)
         {

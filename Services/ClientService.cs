@@ -31,7 +31,7 @@ namespace GrandElementApi.Services
         public async Task<Client> EditClientAsync(Client client)
         {
             using (var conn = _connectionService.GetConnection())
-            {
+            { 
                 conn.Open();
                 using (var cmd = new NpgsqlCommand("update clients set name=@name where id = @id returning id, name", conn))
                 {
@@ -40,10 +40,10 @@ namespace GrandElementApi.Services
                     await cmd.ExecuteNonQueryAsync();
                 }
             }
-            var delDeliveryAddrTask = DeleteDeliveryAddressesAsync(client);
-            var addDeliveryAddeTask = AddDeliveryAddressAsync(client);
-            await delDeliveryAddrTask;
-            await addDeliveryAddeTask;
+            await DeleteDeliveryAddressesAsync(client);
+            var addDeliveryAddrTask = AddDeliveryAddressAsync(client);
+            await addDeliveryAddrTask;
+            client = await GetClientAsync(client.Id.Value);
             return client;
         }
         public async Task<Client> AddClient(Client client)
@@ -65,7 +65,6 @@ namespace GrandElementApi.Services
             await AddDeliveryAddressAsync(client);
             return client;
         }
-
         private async Task AddDeliveryAddressAsync(Client client) {
             foreach (var addr in client.Addresses) { 
                 using (var conn = _connectionService.GetConnection())
@@ -92,7 +91,6 @@ namespace GrandElementApi.Services
                 await Task.WhenAll(addContactsTasks);
             }
         }
-
         private async Task DeleteDeliveryAddressesAsync(Client client) {
             var deleteDeliveryContactsTasks = new List<Task>();
             foreach (var addr in client.Addresses) {
@@ -113,7 +111,69 @@ where client_id = @id", conn))
             }
             await Task.WhenAll(deleteDeliveryContactsTasks);
         }
+        private async Task<Client> GetClientAsync(int id)
+        {
 
+            var data = new List<ClientRow>();
+            using (var conn = _connectionService.GetConnection())
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand(@"
+select c.id, c.name, da.id, da.name, dc.id, dc.name, dc.communication
+from clients c left join delivery_address da on c.id = da.client_id and da.row_status=0
+left join delivery_contacts dc on da.id = dc.delivery_address_id and dc.row_status=0
+where c.row_status=0
+and c.id = @id", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter<int>("id", id));
+                    var reader = await cmd.ExecuteReaderAsync();
+                    while (reader.Read())
+                    {
+                        data.Add(
+                            new ClientRow()
+                            {
+                                Id = reader.GetInt32(0),
+                                Name = reader.GetString(1),
+                                DeliveryAddressId = reader.SafeGetInt32(2),
+                                DeliveryAddressName = reader.SafeGetString(3),
+                                DeliveryContactId = reader.SafeGetInt32(4),
+                                DeliveryContactName = reader.SafeGetString(5),
+                                Communication = reader.SafeGetString(6)
+                            });
+                    }
+                }
+            }
+            var result = new List<Client>();
+            var clients = data.GroupBy(x => x.Id);
+            foreach (var clientGroup in clients)
+            {
+                var client = new Client()
+                {
+                    Id = clientGroup.Key,
+                    Name = clientGroup.First().Name,
+                    Addresses = new List<Address>()
+                };
+                var clientAddresses = clientGroup.GroupBy(x => x.DeliveryAddressId);
+
+                foreach (var row in clientAddresses)
+                {
+                    if (row.Key.HasValue)
+                    {
+                        var address = new Address() { Id = row.Key, Name = row.First().DeliveryAddressName, Contacts = new List<Contact>() };
+                        foreach (var contact in row)
+                        {
+                            if (contact.DeliveryContactId.HasValue)
+                            {
+                                address.Contacts.Add(new Contact() { Id = contact.DeliveryContactId, Name = contact.DeliveryContactName, Communication = contact.Communication });
+                            }
+                        }
+                        client.Addresses.Add(address);
+                    }
+                }
+                result.Add(client);
+            }
+            return result.First();
+        }
         private async Task DeleteDeliveryContactsAsync(int deliveryAddressId)
         {
             using (var conn = _connectionService.GetConnection())
@@ -129,7 +189,6 @@ where delivery_address_id = @id", conn))
                 }
             }
         }
-
         private async Task AddDeliveryContactAsync(Contact contact, int addrId)
         {
             using (var conn = _connectionService.GetConnection())

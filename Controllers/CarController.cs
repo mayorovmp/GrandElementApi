@@ -44,6 +44,8 @@ namespace GrandElementApi.Controllers
         {
             if(car.Owner == null)
                 return DataResponse<Car>.UserError("Укажите владельца");
+            if (car.CarCategory?.Id == null)
+                return DataResponse<Car>.UserError("Укажите категорию");
             try
             {
                 var data = await _carService.AddCarAsync(car);

@@ -3,8 +3,10 @@ using GrandElementApi.Interfaces;
 using GrandElementApi.Models;
 using Npgsql;
 using NpgsqlTypes;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,6 +18,43 @@ namespace GrandElementApi.Services
         public RequestService(IConnectionService connectionService)
         {
             _connectionService = connectionService;
+        }
+        public async Task<byte[]> ExcelGetRequestsAsync(DateTime dt) {
+            var requests = await AllRequestsAsync();
+            byte[] result;
+            var comlumHeadrs = new List<string> { "Дата", "Клиент", "Товар", "Поставщик", 
+                "Контакты водителя", "Цена закупки", "Цена продажи", "Цена перевозки", "Еденица измерения" };
+            using (var package = new ExcelPackage()) {
+                var worksheet = package.Workbook.Worksheets.Add(dt.ToString("dd.MM.yyyy")); //Worksheet name
+                using (var cells = worksheet.Cells[1, 1, 1, comlumHeadrs.Count]) //(1,1) (1,5)
+                {
+                    cells.Style.Font.Bold = true;
+                }
+
+                for (var i = 0; i < comlumHeadrs.Count(); i++)
+                {
+                    worksheet.Cells[1, i + 1].Value = comlumHeadrs[i];
+                }
+
+                //Add values
+
+                for (var row = 0; row < requests.Count; row++)
+                {
+                    var col = 1;
+                    worksheet.Cells[row + 2, col++].Value = requests[row].DeliveryStart?.ToString("dd.MM.yyyy");
+                    worksheet.Cells[row + 2, col++].Value = requests[row].Client?.Name;
+                    worksheet.Cells[row + 2, col++].Value = requests[row].Product?.Name;
+                    worksheet.Cells[row + 2, col++].Value = requests[row].Supplier?.Name;
+                    worksheet.Cells[row + 2, col++].Value = requests[row].Car?.Contacts;
+                    worksheet.Cells[row + 2, col++].Value = requests[row].PurchasePrice;
+                    worksheet.Cells[row + 2, col++].Value = requests[row].SellingPrice;
+                    worksheet.Cells[row + 2, col++].Value = requests[row].FreightPrice;
+                    worksheet.Cells[row + 2, col++].Value = requests[row].Unit;
+                }
+
+                result = package.GetAsByteArray();
+            }
+            return result;
         }
         public async Task<List<Request>> AllRequestsAsync()
         {

@@ -38,6 +38,21 @@ namespace GrandElementApi.Controllers
             }
         }
 
+        [HttpGet("excel/{date}")]
+        public async Task<IActionResult> GetExcelByDate(DateTime date)
+        {
+            var result = new byte[0];
+            try
+            {
+                result = await _requestService.ExcelGetRequestsAsync(date);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+            }
+            return File(result, "application/ms-excel", $"Employee.xlsx");
+        }
+
         [HttpGet("{date}")]
         public async Task<DataResponse<List<Request>>> GetByDate(DateTime date)
         {

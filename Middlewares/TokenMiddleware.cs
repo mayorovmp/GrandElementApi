@@ -4,6 +4,7 @@ using GrandElementApi.Responses;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System.Net;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
@@ -46,7 +47,7 @@ namespace GrandElementApi.Middlewares
                 }
             }
 
-            context.Response.StatusCode = 200;
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             context.Response.ContentType = MediaTypeNames.Application.Json;
 
             var resp = new DataResponse<object>() { Success = false, Message = "Не авторизированный запрос", Code = DataResponse<object>.UNAUTHORIZED };

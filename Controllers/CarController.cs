@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GrandElementApi.Models;
-using GrandElementApi.Responses;
 using GrandElementApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,76 +24,76 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpGet]
-        public async Task<DataResponse<List<Car>>> Get()
+        public async Task<ActionResult<List<Car>>> Get()
         {
             try
-            {
+            {;
                 var data = await _carService.AllCarsAsync();
-                return new DataResponse<List<Car>>() { Code = DataResponse<List<Car>>.OK, Success = true, Data = data };
+                return data;
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<List<Car>>.DefaultError(e.Message);
+                return BadRequest(e.ToString());
             }
         }
 
         [HttpPost]
-        public async Task<DataResponse<Car>> Add(Car car)
+        public async Task<ActionResult<Car>> Add(Car car)
         {
             if(car.Owner == null)
-                return DataResponse<Car>.UserError("Укажите владельца");
+                return ValidationProblem("Укажите владельца");
             if (car.CarCategory?.Id == null)
-                return DataResponse<Car>.UserError("Укажите категорию");
+                return ValidationProblem("Укажите категорию");
             try
             {
                 var data = await _carService.AddCarAsync(car);
-                return new DataResponse<Car>(data);
+                return data;
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<Car>.DefaultError(e.Message);
+                return Problem(e.Message);
             }
         }
 
         [HttpPut]
-        public async Task<DataResponse<Car>> Edit(Car car)
+        public async Task<ActionResult<Car>> Edit(Car car)
         {
             try
             {
                 var data = await _carService.EditCarAsync(car);
-                return new DataResponse<Car>(data);
+                return data;
             }
             catch (Npgsql.PostgresException e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<Car>.DefaultError();
+                return Problem();
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<Car>.DefaultError(e.Message);
+                return Problem(e.Message);
             }
         }
 
         [HttpDelete("{carId}")]
-        public async Task<DataResponse<object>> Delete(int carId)
+        public async Task<ActionResult<object>> Delete(int carId)
         {
             try
             {
                 await _carService.DeleteCar(carId);
-                return new DataResponse<object>();
+                return Ok();
             }
             catch (Npgsql.PostgresException e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<object>.DefaultError();
+                return Problem();
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<object>.DefaultError(e.Message);
+                return Problem(e.Message);
             }
         }
     }

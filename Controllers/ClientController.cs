@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GrandElementApi.Models;
-using GrandElementApi.Responses;
 using GrandElementApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,69 +24,69 @@ namespace GrandElementApi.Controllers
         }
         // GET: Client
         [HttpGet]
-        public async Task<DataResponse<List<Client>>> Get()
+        public async Task<ActionResult<List<Client>>> Get()
         {
             try
             {
                 var res = await _clientService.AllClientsAsync();
-                return new DataResponse<List<Client>>() { Code = DataResponse<object>.OK, Success = true, Data = res };
+                return res;
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<List<Client>>.DefaultError(e);
+                return Problem(e.Message);
             }
         }
         [HttpPut]
-        public async Task<DataResponse<Client>> Edit(Client client)
+        public async Task<ActionResult<Client>> Edit(Client client)
         {
             try
             {
                 var data = await _clientService.EditClientAsync(client);
-                return new DataResponse<Client>(data);
+                return data;
             }
             catch (Npgsql.PostgresException e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<Client>.DefaultError();
+                return Problem();
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<Client>.DefaultError(e.Message);
+                return Problem(e.Message);
             }
         }
         [HttpPost]
-        public async Task<DataResponse<Client>> Add(Client client)
+        public async Task<ActionResult<Client>> Add(Client client)
         {
             try
             {
                 var data = await _clientService.AddClient(client);
-                return new DataResponse<Client>(data);
+                return data;
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<Client>.DefaultError(e.Message);
+                return Problem(e.Message);
             }
         }
         [HttpDelete("{id}")]
-        public async Task<DataResponse<object>> Delete(int id)
+        public async Task<ActionResult<object>> Delete(int id)
         {
             try
             {
                 await _clientService.DeleteClient(id);
-                return new DataResponse<object>();
+                return Ok();
             }
             catch (Npgsql.PostgresException e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<object>.DefaultError();
+                return Problem();
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<object>.DefaultError(e.Message);
+                return Problem(e.Message);
             }
         }
     }

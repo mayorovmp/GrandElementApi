@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GrandElementApi.Models;
-using GrandElementApi.Responses;
 using GrandElementApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -24,17 +23,17 @@ namespace GrandElementApi.Controllers
             _requestService = requestService;
         }
         [HttpGet]
-        public async Task<DataResponse<List<Request>>> Get()
+        public async Task<ActionResult<List<Request>>> Get()
         {
             try
             {
                 var requests = await _requestService.AllRequestsAsync();
-                return new DataResponse<List<Request>>(requests);
+                return requests;
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<List<Request>>.DefaultError(e.Message);
+                return Problem(e.Message);
             }
         }
 
@@ -54,17 +53,17 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpGet("{date}")]
-        public async Task<DataResponse<List<Request>>> GetByDate(DateTime date)
+        public async Task<ActionResult<List<Request>>> GetByDate(DateTime date)
         {
             try
             {
                 var requests = await _requestService.GetRequestsAsync(date);
-                return new DataResponse<List<Request>>(requests);
+                return requests;
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<List<Request>>.DefaultError(e.Message);
+                return Problem(e.Message);
             }
         }
     }

@@ -4,8 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using GrandElementApi.Interfaces;
 using GrandElementApi.Models;
-using GrandElementApi.Responses;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -25,62 +23,62 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpGet]
-        public async Task<DataResponse<List<CarCategory>>> Get()
+        public async Task<ActionResult<List<CarCategory>>> Get()
         {
             try
             {
                 var categories = await _carCategoryService.AllCategoriesAsync();
-                return new DataResponse<List<CarCategory>>() { Code = DataResponse<List<CarCategory>>.OK, Success = true, Data = categories };
+                return categories;
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<List<CarCategory>>.DefaultError();
+                return Problem();
             }
         }
 
         [HttpPost]
-        public async Task<DataResponse<CarCategory>> Add(CarCategory categoryReq)
+        public async Task<ActionResult<CarCategory>> Add(CarCategory categoryReq)
         {
             try
             {
                 var category = await _carCategoryService.AddCategoryAsync(categoryReq.Name);
-                return new DataResponse<CarCategory>() { Code = DataResponse<CarCategory>.OK, Success = true, Data = category };
+                return category;
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<CarCategory>.DefaultError(e.Message);
+                return Problem(e.Message);
             }
         }
 
         [HttpPut]
-        public async Task<DataResponse<CarCategory>> Edit(CarCategory categoryReq)
+        public async Task<ActionResult<CarCategory>> Edit(CarCategory categoryReq)
         {
             try
             {
                 var category = await _carCategoryService.EditCategoryAsync(categoryReq);
-                return new DataResponse<CarCategory>() { Code = DataResponse<CarCategory>.OK, Success = true, Data = category };
+                return category;
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<CarCategory>.DefaultError(e.Message);
+                return Problem(e.Message);
             }
         }
 
         [HttpDelete("{id}")]
-        public async Task<DataResponse<object>> Delete(int id)
+        public async Task<ActionResult<object>> Delete(int id)
         {
             try
             {
                 await _carCategoryService.DeleteCategoryAsync(id);
-                return new DataResponse<object>(null) ;
+                return Ok();
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<object>.DefaultError(e.Message);
+                return Problem(e.Message);
             }
         }
     }

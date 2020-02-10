@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using GrandElementApi.Interfaces;
 using GrandElementApi.Models;
-using GrandElementApi.Responses;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -25,69 +24,69 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpPost]
-        public async Task<DataResponse<Supplier>> Add(Supplier supplier)
+        public async Task<ActionResult<Supplier>> Add(Supplier supplier)
         {
             try
             {
                 supplier = await _supplierService.AddSupplierAsync(supplier);
-                return new DataResponse<Supplier>(supplier);
+                return supplier;
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<Supplier>.DefaultError(e.Message);
+                return Problem(e.Message);
             }
         }
         [HttpGet]
-        public async Task<DataResponse<List<Supplier>>> Get()
+        public async Task<ActionResult<List<Supplier>>> Get()
         {
             try
             {
                 var suppliers = await _supplierService.AllSuppliersAsync();
-                return new DataResponse<List<Supplier>>(suppliers);
+                return suppliers;
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<List<Supplier>>.DefaultError(e.Message);
+                return Problem(e.Message);
             }
         }
         [HttpPut]
-        public async Task<DataResponse<Supplier>> Edit(Supplier supplier)
+        public async Task<ActionResult<Supplier>> Edit(Supplier supplier)
         {
             try
             {
                 var data = await _supplierService.EditSupplierAsync(supplier);
-                return new DataResponse<Supplier>(data);
+                return data;
             }
             catch (Npgsql.PostgresException e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<Supplier>.DefaultError();
+                return Problem();
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<Supplier>.DefaultError(e.Message);
+                return Problem(e.Message);
             }
         }
         [HttpDelete("{id}")]
-        public async Task<DataResponse<object>> Delete(int id)
+        public async Task<ActionResult<object>> Delete(int id)
         {
             try
             {
                 await _supplierService.DeleteSupplierAsync(id);
-                return new DataResponse<object>();
+                return Ok();
             }
             catch (Npgsql.PostgresException e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<object>.DefaultError();
+                return Problem();
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return DataResponse<object>.DefaultError(e.Message);
+                return Problem(e.Message);
             }
         }
     }

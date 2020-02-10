@@ -1,7 +1,7 @@
 ﻿using GrandElementApi.Interfaces;
 using GrandElementApi.Models;
-using GrandElementApi.Responses;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.Net;
@@ -50,7 +50,7 @@ namespace GrandElementApi.Middlewares
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             context.Response.ContentType = MediaTypeNames.Application.Json;
 
-            var resp = new DataResponse<object>() { Success = false, Message = "Не авторизированный запрос", Code = DataResponse<object>.UNAUTHORIZED };
+            var resp = new ProblemDetails() { Detail = "Не авторизированный запрос", Status = StatusCodes.Status401Unauthorized };
 
             var settings = new JsonSerializerSettings();
             settings.ContractResolver = new CamelCasePropertyNamesContractResolver();

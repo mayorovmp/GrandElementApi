@@ -9,3 +9,5 @@ obj/
 *.sln.docstates
 
 Properties/launchSettings.json
+.config/dotnet-tools.json
+Properties/PublishProfiles/FolderProfile.pubxml

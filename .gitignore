@@ -1,5 +1,11 @@
 bin/
 obj/
 .vs/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
 Properties/launchSettings.json
-GrandElementApi.csproj.user

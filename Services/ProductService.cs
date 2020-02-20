@@ -73,17 +73,13 @@ namespace GrandElementApi.Services
         }
         public async Task<ProductShort> EditProductAsync(ProductShort product)
         {
-            if (product == null)
-                throw new ArgumentNullException("Товар не может быть null");
-
             int id;
             if (product.Id.HasValue)
                 id = product.Id.Value;
             else
                 throw new ArgumentException("Идентификатор записи пустой");
-            using (var conn = _connectionService.GetConnection())
+            using (var conn = _connectionService.GetOpenedConnection())
             {
-                conn.Open();
                 using (var cmd = new NpgsqlCommand("update products set name=@name where id = @id returning id, name", conn))
                 {
                     cmd.Parameters.Add(new NpgsqlParameter<string>("name", product.Name));

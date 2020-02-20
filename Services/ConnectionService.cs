@@ -18,5 +18,12 @@ namespace GrandElementApi.Services
         public NpgsqlConnection GetConnection() {
             return new NpgsqlConnection(_connectionString);
         }
+
+        public NpgsqlConnection GetOpenedConnection()
+        {
+            var conn = GetConnection();
+            conn.Open();
+            return conn;
+        }
     }
 }

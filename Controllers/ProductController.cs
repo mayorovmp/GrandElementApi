@@ -51,7 +51,7 @@ namespace GrandElementApi.Controllers
             }
         }
         [HttpDelete("{id}")]
-        public async Task<ActionResult<object>> Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
             try
             {

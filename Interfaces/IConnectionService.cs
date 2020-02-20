@@ -10,5 +10,6 @@ namespace GrandElementApi.Interfaces
     public interface IConnectionService
     {
         public NpgsqlConnection GetConnection();
+        public NpgsqlConnection GetOpenedConnection();
     }
 }

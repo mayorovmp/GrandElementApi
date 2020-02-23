@@ -28,6 +28,7 @@ namespace GrandElementApi.Services
                     var affectedRows = await cmd.ExecuteNonQueryAsync();
                 }
                 await DeleteDeliveryAddressesAsync(conn, id);
+                tran.Complete();
             }
         }
         public async Task<Client> EditClientAsync(Client client)
@@ -233,7 +234,7 @@ where c.row_status=0", conn))
                             new ClientRow()
                             {
                                 Id = reader.GetInt32(0),
-                                Name = reader.GetString(1),
+                                Name = reader.SafeGetString(1),
                                 DeliveryAddressId = reader.SafeGetInt32(2),
                                 DeliveryAddressName = reader.SafeGetString(3),
                                 DeliveryContactId = reader.SafeGetInt32(4),

@@ -1,4 +1,5 @@
-﻿using GrandElementApi.Interfaces;
+﻿using GrandElementApi.Extensions;
+using GrandElementApi.Interfaces;
 using GrandElementApi.Models;
 using Npgsql;
 using System;
@@ -32,7 +33,7 @@ namespace GrandElementApi.Services
                         throw new ArgumentException($"Имя {login} и пароль не найдены.");
                     else {
                         reader.Read();
-                        return new User() {Id = reader.GetInt32(0), Login = reader.GetString(1), Password=reader.GetString(2), Name=reader.GetString(3) };
+                        return new User() {Id = reader.GetInt32(0), Login = reader.SafeGetString(1), Password=reader.SafeGetString(2), Name=reader.SafeGetString(3) };
                     }
                 }
             }

@@ -120,7 +120,7 @@ and client_id =:client_id", conn))
                             new Address()
                             {
                                 Id = reader.GetInt32(0),
-                                Name = reader.GetString(1)
+                                Name = reader.SafeGetString(1)
                             });
                     }
                 return data;
@@ -145,7 +145,7 @@ and c.id = @id", conn))
                         new ClientRow()
                         {
                             Id = reader.GetInt32(0),
-                            Name = reader.GetString(1),
+                            Name = reader.SafeGetString(1),
                             DeliveryAddressId = reader.SafeGetInt32(2),
                             DeliveryAddressName = reader.SafeGetString(3),
                             DeliveryContactId = reader.SafeGetInt32(4),

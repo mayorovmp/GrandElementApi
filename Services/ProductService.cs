@@ -27,7 +27,7 @@ namespace GrandElementApi.Services
                         var res = new List<ProductShort>();
                     while (reader.Read())
                     {
-                        res.Add(new ProductShort() { Id = reader.GetInt32(0), Name = reader.GetString(1) });
+                        res.Add(new ProductShort() { Id = reader.GetInt32(0), Name = reader.SafeGetString(1) });
                     }
                     return res;
                 }

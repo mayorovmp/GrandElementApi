@@ -117,7 +117,7 @@ where c.id = @id and c.row_status=0", conn))
                             StateNumber = reader.SafeGetString(2),
                             Contacts = reader.SafeGetString(3),
                             Comments = reader.SafeGetString(4),
-                            CarCategory = reader.IsDBNull(5) ? null : new CarCategory() { Id = reader.GetInt32(5), Name = reader.GetString(6) }
+                            CarCategory = reader.IsDBNull(5) ? null : new CarCategory() { Id = reader.GetInt32(5), Name = reader.SafeGetString(6) }
                         };
                     }
                     else {
@@ -145,7 +145,7 @@ where c.id = @id and c.row_status=0", conn))
                             StateNumber = reader.SafeGetString(2),
                             Contacts = reader.SafeGetString(3),
                             Comments = reader.SafeGetString(4),
-                            CarCategory = reader.IsDBNull(5) ? null : new CarCategory() { Id = reader.GetInt32(5), Name = reader.GetString(6) }
+                            CarCategory = reader.IsDBNull(5) ? null : new CarCategory() { Id = reader.GetInt32(5), Name = reader.SafeGetString(6) }
                         });
                     }
                     return data;

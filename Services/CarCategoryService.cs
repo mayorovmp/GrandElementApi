@@ -2,6 +2,7 @@
 using GrandElementApi.Interfaces;
 using GrandElementApi.Models;
 using Npgsql;
+using NpgsqlTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,12 +25,12 @@ namespace GrandElementApi.Services
                 conn.Open();
                 using (var cmd = new NpgsqlCommand("insert into car_categories(name, row_status) values(@name, 0) RETURNING id, name", conn))
                 {
-                    cmd.Parameters.AddWithValue("name", name);
+                    cmd.Parameters.Add(new NpgsqlParameter<string>("name", name));
                     var reader = await cmd.ExecuteReaderAsync();
                     if (reader.HasRows)
                     {
                         reader.Read();
-                        CarCategory category = new CarCategory() { Id = reader.GetInt32(0), Name = reader.GetString(1) };
+                        CarCategory category = new CarCategory() { Id = reader.GetInt32(0), Name = reader.SafeGetString(1) };
                         return category;
                     }
                     else {
@@ -50,7 +51,7 @@ namespace GrandElementApi.Services
                     var categories = new List<CarCategory>();
                     while (reader.Read())
                     {
-                        categories.Add(new CarCategory() { Id = reader.GetInt32(0), Name = reader.GetString(1) });
+                        categories.Add(new CarCategory() { Id = reader.GetInt32(0), Name = reader.SafeGetString(1) });
                     }
                     return categories;
                 }

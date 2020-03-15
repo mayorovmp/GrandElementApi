@@ -51,6 +51,20 @@ namespace GrandElementApi.Controllers
                 return Problem(e.Message);
             }
         }
+        [HttpGet("{productId}")]
+        public async Task<ActionResult<List<Supplier>>> GetByProd(int productId)
+        {
+            try
+            {
+                var suppliers = await _supplierService.SuppliersByProductIdAsync(productId);
+                return suppliers;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return Problem(e.Message);
+            }
+        }
         [HttpPut]
         public async Task<ActionResult<Supplier>> Edit(Supplier supplier)
         {

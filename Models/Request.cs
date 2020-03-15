@@ -24,6 +24,6 @@ namespace GrandElementApi.Models
         public ClientShort Client { get; set; }
         public Car Car { get; set; }
         public string Status { get; set; }
-
+        public decimal? ManagerId { get; set; }
     }
 }

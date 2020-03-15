@@ -56,6 +56,48 @@ namespace GrandElementApi.Services
             }
             return result;
         }
+        public async Task Delete(int id) {
+            using (var conn = _connectionService.GetOpenedConnection())
+            {
+                using (var cmd = new NpgsqlCommand("update requests set row_status = 1 where id = @id", conn))
+                {
+                    cmd.Parameters.AddWithValue("id", id);
+                    var affected = await cmd.ExecuteNonQueryAsync();
+                }
+            }
+        }
+
+        public async Task Add(Request r) {
+
+            using (var conn = _connectionService.GetOpenedConnection())
+            {
+                using (var cmd = new NpgsqlCommand(
+@"insert into requests(product_id, delivery_start, delivery_address_id, supplier_id, amount_out, delivery_end, is_long, purchase_price, selling_price, freight_price, unit, freight_cost, profit, client_id, manager_id, status, amount_in)
+values (@product_id, @delivery_start, @delivery_address_id, @supplier_id, @amount_out, @delivery_end, @is_long, @purchase_price, @selling_price, @freight_price, @unit, @freight_cost, @profit, @client_id, @manager_id, @status, @amount_in) RETURNING id", conn))
+                {
+                    cmd.Parameters.AddRange(new[] { 
+                        r.Product == null ? new NpgsqlParameter("product_id", DBNull.Value) : new NpgsqlParameter("product_id", r.Product.Id),
+                        r.DeliveryStart == null ? new NpgsqlParameter("delivery_start", DBNull.Value) : new NpgsqlParameter("delivery_start", r.DeliveryStart),
+                        r.DeliveryAddress == null ? new NpgsqlParameter("delivery_address_id", DBNull.Value) : new NpgsqlParameter("delivery_address_id", r.DeliveryAddress.Id),
+                        r.Supplier == null ? new NpgsqlParameter("supplier_id", DBNull.Value) : new NpgsqlParameter("supplier_id", r.Supplier.Id),
+                        r.AmountOut == null ? new NpgsqlParameter("amount_out", DBNull.Value) : new NpgsqlParameter("amount_out", r.AmountOut.Value),
+                        r.DeliveryEnd == null ? new NpgsqlParameter("delivery_end", DBNull.Value) : new NpgsqlParameter("delivery_end", r.DeliveryEnd),
+                        new NpgsqlParameter<Int32>("is_long", 0),
+                        r.PurchasePrice == null ? new NpgsqlParameter("purchase_price", DBNull.Value) : new NpgsqlParameter("purchase_price", r.PurchasePrice),
+                        r.SellingPrice == null ? new NpgsqlParameter("selling_price", DBNull.Value) : new NpgsqlParameter("selling_price", r.SellingPrice),
+                        r.FreightPrice == null ? new NpgsqlParameter("freight_price", DBNull.Value) : new NpgsqlParameter("freight_price", r.FreightPrice),
+                        r.Unit == null ? new NpgsqlParameter("unit", DBNull.Value) : new NpgsqlParameter("unit", r.Unit),
+                        r.FreightCost == null ? new NpgsqlParameter("freight_cost", DBNull.Value) : new NpgsqlParameter("freight_cost", r.FreightCost),
+                        r.Profit == null ? new NpgsqlParameter("profit", DBNull.Value) : new NpgsqlParameter("profit", r.Profit),
+                        r.Client == null ? new NpgsqlParameter("client_id", DBNull.Value) : new NpgsqlParameter("client_id", r.Client.Id),
+                        r.ManagerId == null ? new NpgsqlParameter("manager_id", DBNull.Value) : new NpgsqlParameter("manager_id", r.ManagerId),
+                        r.Status == null ? new NpgsqlParameter("status", DBNull.Value) : new NpgsqlParameter<Int32>("status", 0),
+                        r.AmountIn == null ? new NpgsqlParameter("amount_in", DBNull.Value) : new NpgsqlParameter("amount_in", r.AmountIn),
+                    });
+                    var reader = await cmd.ExecuteReaderAsync();
+                }
+            }
+        }
         public async Task<List<Request>> AllRequestsAsync()
         {
             using (var conn = _connectionService.GetConnection())

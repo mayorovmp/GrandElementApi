@@ -241,6 +241,65 @@ where id = @id returning id, name, legal_entity, address", conn))
 
             return await GetSupplier(id);
         }
+
+        public async Task<List<Supplier>> SuppliersByProductIdAsync(int productId)
+        {
+
+            List<Supplier> suppliers = new List<Supplier>();
+
+            List<SupplierProductRow> rows = new List<SupplierProductRow>();
+            using (var conn = _connectionService.GetConnection())
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand(@"
+select s.id, s.name, s.legal_entity, s.address, sp.price, sp.product_id, p.name
+from suppliers s
+    left join supplier_product sp on s.id = sp.supplier_id and sp.row_status = 0
+    left join products p on p.id = sp.product_id
+where s.row_status=0 and p.id = @productId
+", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter<Int32>("productId", productId));
+                    using var reader = await cmd.ExecuteReaderAsync();
+                    while (reader.Read())
+                    {
+                        rows.Add(new SupplierProductRow()
+                        {
+                            SupplierId = reader.GetInt32(0),
+                            SupplierName = reader.SafeGetString(1),
+                            LegalName = reader.SafeGetString(2),
+                            Address = reader.SafeGetString(3),
+                            Price = reader.SafeGetDecimal(4),
+                            ProductId = reader.SafeGetInt32(5),
+                            ProductName = reader.SafeGetString(6)
+                        });
+                    }
+                }
+            }
+            var groups = rows.GroupBy(x => x.SupplierId);
+            foreach (var group in groups)
+            {
+                var supplier = new Supplier()
+                {
+                    Id = group.Key,
+                    Name = group.First().SupplierName,
+                    LegalEntity = group.First().LegalName,
+                    Address = group.First().Address,
+                    Products = new List<Product>()
+
+                };
+                foreach (var row in group)
+                {
+                    if (row.ProductId.HasValue)
+                    {
+                        supplier.Products.Add(new Product() { Id = row.ProductId, Name = row.ProductName, Price = row.Price });
+                    }
+                }
+                suppliers.Add(supplier);
+            }
+            return suppliers;
+        }
+
         private class SupplierProductRow {
             public int SupplierId { get; set; }
             public string SupplierName { get; set; }

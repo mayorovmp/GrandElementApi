@@ -30,9 +30,8 @@ namespace GrandElementApi.Services
             }
         }
         public async Task<Car> AddCarAsync(Car car) {
-            using (var conn = _connectionService.GetConnection())
+            using (var conn = _connectionService.GetOpenedConnection())
             {
-                conn.Open();
                 using (var cmd = new NpgsqlCommand("insert into cars(owner, state_number, contacts, comments, car_category_id) values (@owner, @number, @contacts, @comments, @category_id) RETURNING id", conn))
                 {
                     cmd.Parameters.Add(new NpgsqlParameter<string>("owner", car.Owner));

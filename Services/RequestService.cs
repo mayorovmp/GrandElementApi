@@ -72,8 +72,8 @@ namespace GrandElementApi.Services
             using (var conn = _connectionService.GetOpenedConnection())
             {
                 using (var cmd = new NpgsqlCommand(
-@"insert into requests(product_id, delivery_start, delivery_address_id, supplier_id, amount_out, delivery_end, is_long, purchase_price, selling_price, freight_price, unit, freight_cost, profit, client_id, manager_id, status, amount_in)
-values (@product_id, @delivery_start, @delivery_address_id, @supplier_id, @amount_out, @delivery_end, @is_long, @purchase_price, @selling_price, @freight_price, @unit, @freight_cost, @profit, @client_id, @manager_id, @status, @amount_in) RETURNING id", conn))
+@"insert into requests(product_id, delivery_start, delivery_address_id, supplier_id, amount_out, delivery_end, is_long, purchase_price, selling_price, freight_price, unit, freight_cost, profit, client_id, manager_id, status, amount_in, car_category_id)
+values (@product_id, @delivery_start, @delivery_address_id, @supplier_id, @amount_out, @delivery_end, @is_long, @purchase_price, @selling_price, @freight_price, @unit, @freight_cost, @profit, @client_id, @manager_id, @status, @amount_in, @car_category_id) RETURNING id", conn))
                 {
                     cmd.Parameters.AddRange(new[] { 
                         r.Product == null ? new NpgsqlParameter("product_id", DBNull.Value) : new NpgsqlParameter("product_id", r.Product.Id),
@@ -93,6 +93,7 @@ values (@product_id, @delivery_start, @delivery_address_id, @supplier_id, @amoun
                         r.ManagerId == null ? new NpgsqlParameter("manager_id", DBNull.Value) : new NpgsqlParameter("manager_id", r.ManagerId),
                         r.Status == null ? new NpgsqlParameter("status", DBNull.Value) : new NpgsqlParameter<Int32>("status", 0),
                         r.AmountIn == null ? new NpgsqlParameter("amount_in", DBNull.Value) : new NpgsqlParameter("amount_in", r.AmountIn),
+                        r.CarCategory == null ? new NpgsqlParameter("car_category_id", DBNull.Value) : new NpgsqlParameter("car_category_id", r.CarCategory.Id)
                     });
                     var reader = await cmd.ExecuteReaderAsync();
                 }
@@ -118,7 +119,7 @@ from requests r
     left join clients c on r.client_id = c.id
     left join request_cars rc on r.id = rc.request_id
     left join cars cs on rc.assigned_car_id = cs.id
-    left join car_categories cc on cs.car_category_id = cc.id
+    left join car_categories cc on r.car_category_id = cc.id
     left join request_statuses rs on rs.id = r.status
   where r.row_status = 0
 
@@ -200,6 +201,7 @@ from requests r
                     Comments = rdr.SafeGetString(22),
                     CarCategory = rdr.SafeGetInt32(23) != null ? new CarCategory() { Id = rdr.SafeGetInt32(23), Name = rdr.SafeGetString(24) } : null
                 } : null,
+                CarCategory = rdr.SafeGetInt32(23) != null ? new CarCategory() { Id = rdr.SafeGetInt32(23), Name = rdr.SafeGetString(24) } : null,
                 Status = rdr.SafeGetString(25),
                 AmountIn = rdr.SafeGetDecimal(26),
             };

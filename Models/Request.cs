@@ -25,5 +25,6 @@ namespace GrandElementApi.Models
         public Car Car { get; set; }
         public string Status { get; set; }
         public decimal? ManagerId { get; set; }
+        public CarCategory CarCategory { get; set; }
     }
 }

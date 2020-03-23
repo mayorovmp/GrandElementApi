@@ -82,6 +82,21 @@ namespace GrandElementApi.Controllers
             }
         }
 
+        [HttpPut]
+        public async Task<ActionResult> Edit(Request r)
+        {
+            try
+            {
+                await _requestService.EditAsync(r);
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return Problem(e.Message);
+            }
+        }
+
         [HttpDelete("{id}")]
         public async Task<ActionResult<object>> Delete(int id)
         {

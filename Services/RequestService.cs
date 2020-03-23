@@ -175,6 +175,27 @@ from requests r
                 }
             }
         }
+        public async Task EditAsync(Request item)
+        {
+            throw new NotImplementedException("Метод не разработан");
+            int id;
+            if (item.Id.HasValue)
+                id = item.Id.Value;
+            else
+                throw new ArgumentException("Идентификатор записи пустой");
+            using (var conn = _connectionService.GetOpenedConnection())
+            {
+                using (var cmd = new NpgsqlCommand("update products set name=@name where id = @id returning id, name", conn))
+                {
+                    int cnt = await cmd.ExecuteNonQueryAsync();
+                    if (cnt == 0)
+                    {
+                        throw new Exception("Не изменено");
+                    }
+                }
+            }
+
+        }
         private static Request ExtraxtRequest(NpgsqlDataReader rdr) {
             return new Request()
             {

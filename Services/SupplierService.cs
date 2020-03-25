@@ -81,6 +81,7 @@ from suppliers s
     left join supplier_product sp on s.id = sp.supplier_id and sp.row_status = 0
     left join products p on p.id = sp.product_id
 where s.row_status=0
+order by s.created desc
 ", conn))
                 {
                     using var reader = await cmd.ExecuteReaderAsync();

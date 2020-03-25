@@ -102,7 +102,9 @@ RETURNING id, owner, state_number, contacts, comments", conn))
                 using (var cmd = new NpgsqlCommand(@"
 select c.id, c.owner, c.state_number, c.contacts, c.comments, cc.id, cc.name 
 from cars c left join car_categories cc on c.car_category_id = cc.id
-where c.id = @id and c.row_status=0", conn))
+where c.id = @id and c.row_status=0
+order by c.created desc
+", conn))
                 {
                     cmd.Parameters.AddWithValue("id", NpgsqlTypes.NpgsqlDbType.Integer, id);
                     var reader = await cmd.ExecuteReaderAsync();

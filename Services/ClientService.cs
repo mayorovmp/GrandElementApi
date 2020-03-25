@@ -225,7 +225,8 @@ values(@name, @communication, @delivery_address_id ) returning id", conn))
 select c.id, c.name, da.id, da.name, dc.id, dc.name, dc.communication
 from clients c left join delivery_address da on c.id = da.client_id and da.row_status=0
 left join delivery_contacts dc on da.id = dc.delivery_address_id and dc.row_status=0
-where c.row_status=0", conn))
+where c.row_status=0
+order by c.created desc", conn))
             {
                 using (var reader = await cmd.ExecuteReaderAsync())
                     while (reader.Read())

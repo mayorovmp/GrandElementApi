@@ -12,7 +12,7 @@ namespace GrandElementApi.Models
         public string StateNumber { get; set; }
         public string Contacts { get; set; }
         public string Comments { get; set; }
+        public decimal? FreightPrice { get; set; }
         public CarCategory CarCategory { get; set; }
-
     }
 }

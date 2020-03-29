@@ -72,17 +72,21 @@ namespace GrandElementApi.Services
             using (var conn = _connectionService.GetOpenedConnection())
             {
                 using (var cmd = new NpgsqlCommand(
-@"insert into requests(product_id, delivery_start, delivery_address_id, supplier_id, amount_out, delivery_end, is_long, purchase_price, selling_price, freight_price, unit, freight_cost, profit, client_id, manager_id, status, amount_in, car_category_id)
-values (@product_id, @delivery_start, @delivery_address_id, @supplier_id, @amount_out, @delivery_end, @is_long, @purchase_price, @selling_price, @freight_price, @unit, @freight_cost, @profit, @client_id, @manager_id, @status, @amount_in, @car_category_id) RETURNING id", conn))
+@"insert into requests(product_id, delivery_start, delivery_address_id, supplier_id, amount_out, delivery_end, is_long, purchase_price, 
+selling_price, freight_price, unit, freight_cost, profit, client_id, manager_id, status, 
+amount_in, car_category_id, comment, reward, selling_cost, car_id, amount)
+values (@product_id, @delivery_start, @delivery_address_id, @supplier_id, @amount_out, @delivery_end, @is_long, @purchase_price, 
+@selling_price, @freight_price, @unit, @freight_cost, @profit, @client_id, @manager_id, @status, 
+@amount_in, @car_category_id, @comment, @reward, @selling_cost, @car_id, @amount)", conn))
                 {
-                    cmd.Parameters.AddRange(new[] { 
+                    cmd.Parameters.AddRange(new[] {
                         r.Product == null ? new NpgsqlParameter("product_id", DBNull.Value) : new NpgsqlParameter("product_id", r.Product.Id),
                         r.DeliveryStart == null ? new NpgsqlParameter("delivery_start", DBNull.Value) : new NpgsqlParameter("delivery_start", r.DeliveryStart),
                         r.DeliveryAddress == null ? new NpgsqlParameter("delivery_address_id", DBNull.Value) : new NpgsqlParameter("delivery_address_id", r.DeliveryAddress.Id),
                         r.Supplier == null ? new NpgsqlParameter("supplier_id", DBNull.Value) : new NpgsqlParameter("supplier_id", r.Supplier.Id),
                         r.AmountOut == null ? new NpgsqlParameter("amount_out", DBNull.Value) : new NpgsqlParameter("amount_out", r.AmountOut.Value),
                         r.DeliveryEnd == null ? new NpgsqlParameter("delivery_end", DBNull.Value) : new NpgsqlParameter("delivery_end", r.DeliveryEnd),
-                        new NpgsqlParameter<Int32>("is_long", 0),
+                        new NpgsqlParameter("is_long", r.IsLong ? 1 : 0),
                         r.PurchasePrice == null ? new NpgsqlParameter("purchase_price", DBNull.Value) : new NpgsqlParameter("purchase_price", r.PurchasePrice),
                         r.SellingPrice == null ? new NpgsqlParameter("selling_price", DBNull.Value) : new NpgsqlParameter("selling_price", r.SellingPrice),
                         r.FreightPrice == null ? new NpgsqlParameter("freight_price", DBNull.Value) : new NpgsqlParameter("freight_price", r.FreightPrice),
@@ -91,13 +95,30 @@ values (@product_id, @delivery_start, @delivery_address_id, @supplier_id, @amoun
                         r.Profit == null ? new NpgsqlParameter("profit", DBNull.Value) : new NpgsqlParameter("profit", r.Profit),
                         r.Client == null ? new NpgsqlParameter("client_id", DBNull.Value) : new NpgsqlParameter("client_id", r.Client.Id),
                         r.ManagerId == null ? new NpgsqlParameter("manager_id", DBNull.Value) : new NpgsqlParameter("manager_id", r.ManagerId),
-                        r.Status == null ? new NpgsqlParameter("status", DBNull.Value) : new NpgsqlParameter<Int32>("status", 0),
+                        r.Status == null ?  new NpgsqlParameter<Int32>("status", 0) : new NpgsqlParameter("status", GetStatusId(r.Status)),
                         r.AmountIn == null ? new NpgsqlParameter("amount_in", DBNull.Value) : new NpgsqlParameter("amount_in", r.AmountIn),
-                        r.CarCategory == null ? new NpgsqlParameter("car_category_id", DBNull.Value) : new NpgsqlParameter("car_category_id", r.CarCategory.Id)
+                        r.CarCategory == null ? new NpgsqlParameter("car_category_id", DBNull.Value) : new NpgsqlParameter("car_category_id", r.CarCategory.Id),
+                        r.Comment == null ? new NpgsqlParameter("comment", DBNull.Value) : new NpgsqlParameter("comment", r.Comment),
+                        r.Reward == null ? new NpgsqlParameter("reward", DBNull.Value) : new NpgsqlParameter("reward", r.Reward),
+                        r.SellingCost == null ? new NpgsqlParameter("selling_cost", DBNull.Value) : new NpgsqlParameter("selling_cost", r.SellingCost),
+                        r.Car == null ? new NpgsqlParameter("car_id", DBNull.Value) : new NpgsqlParameter("car_id", r.Car.Id),
+                        r.Amount == null ? new NpgsqlParameter("amount", DBNull.Value) : new NpgsqlParameter("amount", r.Amount),
                     });
-                    var reader = await cmd.ExecuteReaderAsync();
+                    await cmd.ExecuteNonQueryAsync();
                 }
             }
+        }
+
+        private int GetStatusId(string status) {
+            if (status.Equals("активна"))
+            {
+                return 0;
+            }
+            else if (status.Equals("исполнена"))
+            {
+                return 1;
+            }
+            else return 0;
         }
         public async Task<List<Request>> AllRequestsAsync()
         {
@@ -110,18 +131,18 @@ select r.id, p.id, p.name, da.id, da.name, s.id, s.name, r.amount_out,
        r.purchase_price, r.selling_price, r.freight_price, r.unit, r.freight_cost, r.profit,
        c.id, c.name,
        cs.id, cs.owner, cs.state_number, cs.contacts, cs.comments,
-       cc.id, cc.name, rs.description, r.amount_in
+       cc.id, cc.name, rs.description, r.amount_in, r.amount, r.comment, r.reward, r.selling_cost, r.is_long
 from requests r
     left join orders o on r.order_id = o.id
     left join products p on r.product_id = p.id
     left join delivery_address da on r.delivery_address_id = da.id
     left join suppliers s on r.supplier_id = s.id
     left join clients c on r.client_id = c.id
-    left join request_cars rc on r.id = rc.request_id
-    left join cars cs on rc.assigned_car_id = cs.id
+    left join cars cs on r.car_id = cs.id
     left join car_categories cc on r.car_category_id = cc.id
     left join request_statuses rs on rs.id = r.status
   where r.row_status = 0
+order by r.delivery_start desc
 
 ", conn))
                 {
@@ -147,7 +168,7 @@ select r.id, p.id, p.name, da.id, da.name, s.id, s.name, r.amount_out,
        r.purchase_price, r.selling_price, r.freight_price, r.unit, r.freight_cost, r.profit,
        c.id, c.name,
        cs.id, cs.owner, cs.state_number, cs.contacts, cs.comments,
-       cc.id, cc.name, rs.description, r.amount_in
+       cc.id, cc.name, rs.description, r.amount_in, r.comment
 from requests r
     left join orders o on r.order_id = o.id
     left join products p on r.product_id = p.id
@@ -225,6 +246,11 @@ from requests r
                 CarCategory = rdr.SafeGetInt32(23) != null ? new CarCategory() { Id = rdr.SafeGetInt32(23), Name = rdr.SafeGetString(24) } : null,
                 Status = rdr.SafeGetString(25),
                 AmountIn = rdr.SafeGetDecimal(26),
+                Amount = rdr.SafeGetDecimal(27),
+                Comment = rdr.SafeGetString(28),
+                Reward = rdr.SafeGetDecimal(29),
+                SellingCost = rdr.SafeGetDecimal(30),
+                IsLong = rdr.SafeGetInt32(31) == 0 ? false : true
             };
         }
     }

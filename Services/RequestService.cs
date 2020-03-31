@@ -130,7 +130,7 @@ select r.id, p.id, p.name, da.id, da.name, s.id, s.name, r.amount_out,
        r.delivery_start, r.delivery_end,
        r.purchase_price, r.selling_price, r.freight_price, r.unit, r.freight_cost, r.profit,
        c.id, c.name,
-       cs.id, cs.owner, cs.state_number, cs.contacts, cs.comments,
+       cs.id, cs.owner, cs.contacts, cs.comments,
        cc.id, cc.name, rs.description, r.amount_in, r.amount, r.comment, r.reward, r.selling_cost, r.is_long
 from requests r
     left join orders o on r.order_id = o.id
@@ -167,7 +167,7 @@ select r.id, p.id, p.name, da.id, da.name, s.id, s.name, r.amount_out,
        r.delivery_start, r.delivery_end,
        r.purchase_price, r.selling_price, r.freight_price, r.unit, r.freight_cost, r.profit,
        c.id, c.name,
-       cs.id, cs.owner, cs.state_number, cs.contacts, cs.comments,
+       cs.id, cs.owner, cs.contacts, cs.comments,
        cc.id, cc.name, rs.description, r.amount_in, r.comment
 from requests r
     left join orders o on r.order_id = o.id
@@ -238,19 +238,18 @@ from requests r
                 {
                     Id = rdr.SafeGetInt32(18),
                     Owner = rdr.SafeGetString(19),
-                    StateNumber = rdr.SafeGetString(20),
-                    Contacts = rdr.SafeGetString(21),
-                    Comments = rdr.SafeGetString(22),
-                    CarCategory = rdr.SafeGetInt32(23) != null ? new CarCategory() { Id = rdr.SafeGetInt32(23), Name = rdr.SafeGetString(24) } : null
+                    Contacts = rdr.SafeGetString(20),
+                    Comments = rdr.SafeGetString(21),
+                    CarCategory = rdr.SafeGetInt32(22) != null ? new CarCategory() { Id = rdr.SafeGetInt32(22), Name = rdr.SafeGetString(23) } : null
                 } : null,
-                CarCategory = rdr.SafeGetInt32(23) != null ? new CarCategory() { Id = rdr.SafeGetInt32(23), Name = rdr.SafeGetString(24) } : null,
-                Status = rdr.SafeGetString(25),
-                AmountIn = rdr.SafeGetDecimal(26),
-                Amount = rdr.SafeGetDecimal(27),
-                Comment = rdr.SafeGetString(28),
-                Reward = rdr.SafeGetDecimal(29),
-                SellingCost = rdr.SafeGetDecimal(30),
-                IsLong = rdr.SafeGetInt32(31) == 0 ? false : true
+                CarCategory = rdr.SafeGetInt32(22) != null ? new CarCategory() { Id = rdr.SafeGetInt32(22), Name = rdr.SafeGetString(23) } : null,
+                Status = rdr.SafeGetString(24),
+                AmountIn = rdr.SafeGetDecimal(25),
+                Amount = rdr.SafeGetDecimal(26),
+                Comment = rdr.SafeGetString(27),
+                Reward = rdr.SafeGetDecimal(28),
+                SellingCost = rdr.SafeGetDecimal(29),
+                IsLong = rdr.SafeGetInt32(30) == 0 ? false : true
             };
         }
     }

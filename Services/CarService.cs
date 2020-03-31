@@ -32,20 +32,18 @@ namespace GrandElementApi.Services
         public async Task<Car> AddCarAsync(Car car) {
             using (var conn = _connectionService.GetOpenedConnection())
             {
-                using (var cmd = new NpgsqlCommand("insert into cars(owner, state_number, contacts, comments, car_category_id) values (@owner, @number, @contacts, @comments, @category_id) RETURNING id", conn))
+                using (var cmd = new NpgsqlCommand("insert into cars(owner, contacts, comments, car_category_id, freight_price, unit, vat) values (@owner, @contacts, @comments, @category_id, @freight_price, @unit, @vat) RETURNING id", conn))
                 {
-                    cmd.Parameters.Add(new NpgsqlParameter<string>("owner", car.Owner));
-                    cmd.Parameters.Add(new NpgsqlParameter<string>("number", car.StateNumber));
-                    cmd.Parameters.Add(new NpgsqlParameter<string>("contacts", car.Contacts));
-                    cmd.Parameters.Add(new NpgsqlParameter<string>("comments", car.Comments));
-                    if (car.CarCategory == null)
-                    {
-                        cmd.Parameters.Add(new NpgsqlParameter("category_id", DBNull.Value));
-                    }
-                    else
-                    {
-                        cmd.Parameters.Add(new NpgsqlParameter("category_id", car.CarCategory.Id));
-                    }
+                    cmd.Parameters.AddRange(new[] {
+                        car.Owner == null ? new NpgsqlParameter("owner", DBNull.Value) : new NpgsqlParameter<string>("owner", car.Owner),
+                        car.Contacts == null ? new NpgsqlParameter("contacts", DBNull.Value) : new NpgsqlParameter<string>("contacts", car.Contacts),
+                        car.Comments == null ? new NpgsqlParameter("comments", DBNull.Value) : new NpgsqlParameter<string>("comments", car.Comments),
+                        car.CarCategory == null ? new NpgsqlParameter("category_id", DBNull.Value) : new NpgsqlParameter("category_id", car.CarCategory.Id),
+                        car.FreightPrice == null ? new NpgsqlParameter("freight_price", DBNull.Value) : new NpgsqlParameter("freight_price", car.FreightPrice),
+                        car.Unit == null ? new NpgsqlParameter("unit", DBNull.Value) : new NpgsqlParameter("unit", car.Unit),
+                        car.VAT ? new NpgsqlParameter("vat", DBNull.Value) : new NpgsqlParameter("vat", car.VAT ? 1 : 0),
+                    });
+
                     var reader = await cmd.ExecuteReaderAsync();
                     if (reader.Read())
                     {
@@ -70,18 +68,21 @@ namespace GrandElementApi.Services
             {
                 conn.Open();
                 using (var cmd = new NpgsqlCommand(@"
-update cars set owner = @owner, state_number=@number, contacts=@contacts, comments=@comments, car_category_id=@category_id, freight_price=@freight_price 
+update cars set owner = @owner, contacts=@contacts, comments=@comments, car_category_id=@category_id, freight_price=@freight_price, 
+unit=@unit,
+vat=@vat
 where id=@id 
 RETURNING id, owner, state_number, contacts, comments, freight_price", conn))
                 {
                     cmd.Parameters.AddRange(new[] {
                         new NpgsqlParameter<int>("id", id),
                         new NpgsqlParameter<string>("owner", car.Owner),
-                        new NpgsqlParameter<string>("number", car.StateNumber),
                         new NpgsqlParameter<string>("contacts", car.Contacts),
                         new NpgsqlParameter<string>("comments", car.Comments),
                         car.FreightPrice == null ? new NpgsqlParameter("freight_price", DBNull.Value) : new NpgsqlParameter("freight_price", car.FreightPrice),
-                        car.CarCategory == null ? new NpgsqlParameter("category_id", DBNull.Value) : new NpgsqlParameter("category_id", car.CarCategory.Id)
+                        car.CarCategory == null ? new NpgsqlParameter("category_id", DBNull.Value) : new NpgsqlParameter("category_id", car.CarCategory.Id),
+                        car.Unit == null ? new NpgsqlParameter("unit", DBNull.Value) : new NpgsqlParameter("unit", car.Unit),
+                        car.VAT ? new NpgsqlParameter("vat", DBNull.Value) : new NpgsqlParameter("vat", car.VAT ? 1 : 0),
                     });
 
                     var reader = await cmd.ExecuteReaderAsync();
@@ -97,7 +98,7 @@ RETURNING id, owner, state_number, contacts, comments, freight_price", conn))
             {
                 conn.Open();
                 using (var cmd = new NpgsqlCommand(@"
-select c.id, c.owner, c.state_number, c.contacts, c.comments, cc.id, cc.name, c.freight_price
+select c.id, c.owner, c.contacts, c.comments, cc.id, cc.name, c.freight_price, c.vat, c.unit
 from cars c left join car_categories cc on c.car_category_id = cc.id
 where c.id = @id and c.row_status=0
 order by c.created desc
@@ -112,11 +113,12 @@ order by c.created desc
                         {
                             Id = reader.GetInt32(0),
                             Owner = reader.SafeGetString(1),
-                            StateNumber = reader.SafeGetString(2),
-                            Contacts = reader.SafeGetString(3),
-                            Comments = reader.SafeGetString(4),
-                            CarCategory = reader.IsDBNull(5) ? null : new CarCategory() { Id = reader.GetInt32(5), Name = reader.SafeGetString(6) },
-                            FreightPrice = reader.SafeGetDecimal(7)
+                            Contacts = reader.SafeGetString(2),
+                            Comments = reader.SafeGetString(3),
+                            CarCategory = reader.IsDBNull(4) ? null : new CarCategory() { Id = reader.GetInt32(4), Name = reader.SafeGetString(5) },
+                            FreightPrice = reader.SafeGetDecimal(6),
+                            VAT = reader.SafeGetDecimal(7).GetValueOrDefault(1) == 1 ? true : false,
+                            Unit = reader.SafeGetString(8)
                         };
                     }
                     else {
@@ -132,7 +134,7 @@ order by c.created desc
             {
                 conn.Open();
                 using (var cmd = new NpgsqlCommand(@"
-select c.id, c.owner, c.state_number, c.contacts, c.comments, cc.id, cc.name, c.freight_price
+select c.id, c.owner, c.contacts, c.comments, cc.id, cc.name, c.freight_price, c.vat, c.unit
 from cars c left join car_categories cc on c.car_category_id = cc.id where c.row_status=0
 order by c.owner", conn))
                 {
@@ -144,11 +146,12 @@ order by c.owner", conn))
                         {
                             Id = reader.GetInt32(0),
                             Owner = reader.SafeGetString(1),
-                            StateNumber = reader.SafeGetString(2),
-                            Contacts = reader.SafeGetString(3),
-                            Comments = reader.SafeGetString(4),
-                            CarCategory = reader.IsDBNull(5) ? null : new CarCategory() { Id = reader.GetInt32(5), Name = reader.SafeGetString(6) },
-                            FreightPrice = reader.SafeGetDecimal(7)
+                            Contacts = reader.SafeGetString(2),
+                            Comments = reader.SafeGetString(3),
+                            CarCategory = reader.IsDBNull(4) ? null : new CarCategory() { Id = reader.GetInt32(4), Name = reader.SafeGetString(5) },
+                            FreightPrice = reader.SafeGetDecimal(6),
+                            VAT = reader.SafeGetDecimal(7).GetValueOrDefault(1) == 1 ? true : false,
+                            Unit = reader.SafeGetString(8)
                         }) ;
                     }
                     return data;

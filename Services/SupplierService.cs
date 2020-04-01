@@ -23,11 +23,15 @@ namespace GrandElementApi.Services
             using (var tran = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             using (var conn = _connectionService.GetOpenedConnection())
             {
-                using (var cmd = new NpgsqlCommand("insert into suppliers(legal_entity, address, name) values (@LegalEntity, @Address, @Name) RETURNING id", conn))
+                using (var cmd = new NpgsqlCommand("insert into suppliers(legal_entity, address, name, vat) values (@LegalEntity, @Address, @Name, @vat) RETURNING id", conn))
                 {
-                    cmd.Parameters.Add(new NpgsqlParameter<string>("LegalEntity", supplier.LegalEntity));
-                    cmd.Parameters.Add(new NpgsqlParameter<string>("Address", supplier.Address));
-                    cmd.Parameters.Add(new NpgsqlParameter<string>("Name", supplier.Name));
+                    cmd.Parameters.AddRange(new[] { 
+                        new NpgsqlParameter<string>("LegalEntity", supplier.LegalEntity),
+                        new NpgsqlParameter<string>("Address", supplier.Address),
+                        new NpgsqlParameter<string>("Name", supplier.Name),
+                        new NpgsqlParameter("vat", supplier.VAT ? 1 : 0),
+                    });
+                    
 
                     using (var reader = await cmd.ExecuteReaderAsync())
                     {
@@ -76,7 +80,7 @@ RETURNING supplier_id, product_id, price", conn);
             {
                 conn.Open();
                 using (var cmd = new NpgsqlCommand(@"
-select s.id, s.name, s.legal_entity, s.address, sp.price, sp.product_id, p.name
+select s.id, s.name, s.legal_entity, s.address, sp.price, sp.product_id, p.name, s.vat
 from suppliers s
     left join supplier_product sp on s.id = sp.supplier_id and sp.row_status = 0
     left join products p on p.id = sp.product_id
@@ -95,7 +99,8 @@ order by s.created desc
                             Address = reader.SafeGetString(3),
                             Price = reader.SafeGetDecimal(4),
                             ProductId = reader.SafeGetInt32(5),
-                            ProductName = reader.SafeGetString(6)
+                            ProductName = reader.SafeGetString(6),
+                            VAT = reader.SafeGetDecimal(7).GetValueOrDefault(1) == 1 ? true : false,
                         });
                     }
                 }
@@ -109,7 +114,8 @@ order by s.created desc
                     Name = group.First().SupplierName,
                     LegalEntity = group.First().LegalName,
                     Address = group.First().Address,
-                    Products = new List<Product>()
+                    Products = new List<Product>(),
+                    VAT = group.First().VAT.Value
                     
                 };
                 foreach (var row in group)
@@ -130,7 +136,7 @@ order by s.created desc
             using (var conn = _connectionService.GetOpenedConnection())
             {
                 using (var cmd = new NpgsqlCommand(@"
-select s.id, s.name, s.legal_entity, s.address, sp.price, sp.product_id, p.name
+select s.id, s.name, s.legal_entity, s.address, sp.price, sp.product_id, p.name, s.vat
 from suppliers s
     left join supplier_product sp on s.id = sp.supplier_id and sp.row_status=0
     left join products p on p.id = sp.product_id
@@ -151,7 +157,8 @@ order by s.id desc
                                 Address = reader.SafeGetString(3),
                                 Price = reader.SafeGetDecimal(4),
                                 ProductId = reader.SafeGetInt32(5),
-                                ProductName = reader.SafeGetString(6)
+                                ProductName = reader.SafeGetString(6),
+                                VAT = reader.SafeGetDecimal(7).GetValueOrDefault(1) == 1 ? true : false,
                             });
                         }
                 }
@@ -165,7 +172,8 @@ order by s.id desc
                 Name = rows.First().SupplierName,
                 LegalEntity = rows.First().LegalName,
                 Address = rows.First().Address,
-                Products = new List<Product>()
+                Products = new List<Product>(),
+                VAT = rows.First().VAT.GetValueOrDefault(true)
             };
             foreach (var row in rows)
             {
@@ -205,13 +213,17 @@ where supplier_id = @id", conn))
 update suppliers set 
 legal_entity=@legal_entity, 
 address=@address,
-name=@name
+name=@name,
+vat=@vat
 where id = @id returning id, name, legal_entity, address", conn))
             {
-                cmd.Parameters.Add(new NpgsqlParameter<int>("id", supplier.Id.Value));
-                cmd.Parameters.Add(new NpgsqlParameter<string>("legal_entity", supplier.LegalEntity));
-                cmd.Parameters.Add(new NpgsqlParameter<string>("name", supplier.Name));
-                cmd.Parameters.Add(new NpgsqlParameter<string>("address", supplier.Address));
+                cmd.Parameters.AddRange(new[] {
+                    new NpgsqlParameter<int>("id", supplier.Id.Value),
+                    new NpgsqlParameter<string>("legal_entity", supplier.LegalEntity),
+                    new NpgsqlParameter<string>("name", supplier.Name),
+                    new NpgsqlParameter<string>("address", supplier.Address),
+                    new NpgsqlParameter("vat", supplier.VAT ? 1 : 0),
+                });
                 cmd.ExecuteNonQuery();
             }
         }
@@ -253,7 +265,7 @@ where id = @id returning id, name, legal_entity, address", conn))
             {
                 conn.Open();
                 using (var cmd = new NpgsqlCommand(@"
-select s.id, s.name, s.legal_entity, s.address, sp.price, sp.product_id, p.name
+select s.id, s.name, s.legal_entity, s.address, sp.price, sp.product_id, p.name, s.vat
 from suppliers s
     left join supplier_product sp on s.id = sp.supplier_id and sp.row_status = 0
     left join products p on p.id = sp.product_id
@@ -272,7 +284,8 @@ where s.row_status=0 and p.id = @productId
                             Address = reader.SafeGetString(3),
                             Price = reader.SafeGetDecimal(4),
                             ProductId = reader.SafeGetInt32(5),
-                            ProductName = reader.SafeGetString(6)
+                            ProductName = reader.SafeGetString(6),
+                            VAT = reader.SafeGetDecimal(7).GetValueOrDefault(1) == 1 ? true : false,
                         });
                     }
                 }
@@ -286,7 +299,8 @@ where s.row_status=0 and p.id = @productId
                     Name = group.First().SupplierName,
                     LegalEntity = group.First().LegalName,
                     Address = group.First().Address,
-                    Products = new List<Product>()
+                    Products = new List<Product>(),
+                    VAT = rows.First().VAT.GetValueOrDefault(true)
 
                 };
                 foreach (var row in group)
@@ -309,6 +323,7 @@ where s.row_status=0 and p.id = @productId
             public int? ProductId { get; set; }
             public string ProductName { get; set; }
             public decimal? Price { get; set; }
+            public bool? VAT { get; set; }
         }
     }
 }

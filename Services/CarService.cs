@@ -41,7 +41,7 @@ namespace GrandElementApi.Services
                         car.CarCategory == null ? new NpgsqlParameter("category_id", DBNull.Value) : new NpgsqlParameter("category_id", car.CarCategory.Id),
                         car.FreightPrice == null ? new NpgsqlParameter("freight_price", DBNull.Value) : new NpgsqlParameter("freight_price", car.FreightPrice),
                         car.Unit == null ? new NpgsqlParameter("unit", DBNull.Value) : new NpgsqlParameter("unit", car.Unit),
-                        car.VAT ? new NpgsqlParameter("vat", DBNull.Value) : new NpgsqlParameter("vat", car.VAT ? 1 : 0),
+                        new NpgsqlParameter("vat", car.VAT ? 1 : 0),
                     });
 
                     var reader = await cmd.ExecuteReaderAsync();

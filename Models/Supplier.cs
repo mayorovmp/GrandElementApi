@@ -11,6 +11,7 @@ namespace GrandElementApi.Models
         public string Name { get; set; }
         public string LegalEntity { get; set; }
         public string Address { get; set; }
+        public bool VAT { get; set; }
         public List<Product> Products { get; set; } 
     }
 }

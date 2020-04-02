@@ -300,7 +300,7 @@ where s.row_status=0 and p.id = @productId
                     LegalEntity = group.First().LegalName,
                     Address = group.First().Address,
                     Products = new List<Product>(),
-                    VAT = rows.First().VAT.GetValueOrDefault(true)
+                    VAT = group.First().VAT.GetValueOrDefault(true)
 
                 };
                 foreach (var row in group)

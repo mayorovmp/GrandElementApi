@@ -74,10 +74,10 @@ namespace GrandElementApi.Services
                 using (var cmd = new NpgsqlCommand(
 @"insert into requests(product_id, delivery_start, delivery_address_id, supplier_id, amount_out, delivery_end, is_long, purchase_price, 
 selling_price, freight_price, unit, freight_cost, profit, client_id, manager_id, status, 
-amount_in, car_category_id, comment, reward, selling_cost, car_id, amount)
+amount_in, car_category_id, comment, reward, selling_cost, car_id, amount, supplier_vat, car_vat)
 values (@product_id, @delivery_start, @delivery_address_id, @supplier_id, @amount_out, @delivery_end, @is_long, @purchase_price, 
 @selling_price, @freight_price, @unit, @freight_cost, @profit, @client_id, @manager_id, @status, 
-@amount_in, @car_category_id, @comment, @reward, @selling_cost, @car_id, @amount)", conn))
+@amount_in, @car_category_id, @comment, @reward, @selling_cost, @car_id, @amount, @supplier_vat, @car_vat)", conn))
                 {
                     cmd.Parameters.AddRange(new[] {
                         r.Product == null ? new NpgsqlParameter("product_id", DBNull.Value) : new NpgsqlParameter("product_id", r.Product.Id),
@@ -103,6 +103,8 @@ values (@product_id, @delivery_start, @delivery_address_id, @supplier_id, @amoun
                         r.SellingCost == null ? new NpgsqlParameter("selling_cost", DBNull.Value) : new NpgsqlParameter("selling_cost", r.SellingCost),
                         r.Car == null ? new NpgsqlParameter("car_id", DBNull.Value) : new NpgsqlParameter("car_id", r.Car.Id),
                         r.Amount == null ? new NpgsqlParameter("amount", DBNull.Value) : new NpgsqlParameter("amount", r.Amount),
+                        r.SupplierVat == null ? new NpgsqlParameter("supplier_vat", DBNull.Value) : new NpgsqlParameter("supplier_vat", r.SupplierVat.Value? 1 : 0),
+                        r.CarVat == null ? new NpgsqlParameter("car_vat", DBNull.Value) : new NpgsqlParameter("car_vat", r.CarVat.Value? 1 : 0)
                     });
                     await cmd.ExecuteNonQueryAsync();
                 }
@@ -131,7 +133,7 @@ select r.id, p.id, p.name, da.id, da.name, s.id, s.name, r.amount_out,
        r.purchase_price, r.selling_price, r.freight_price, r.unit, r.freight_cost, r.profit,
        c.id, c.name,
        cs.id, cs.owner, cs.contacts, cs.comments,
-       cc.id, cc.name, rs.description, r.amount_in, r.amount, r.comment, r.reward, r.selling_cost, r.is_long
+       cc.id, cc.name, rs.description, r.amount_in, r.amount, r.comment, r.reward, r.selling_cost, r.is_long, r.supplier_vat, r.car_vat, r.amount_complete 
 from requests r
     left join orders o on r.order_id = o.id
     left join products p on r.product_id = p.id
@@ -142,7 +144,7 @@ from requests r
     left join car_categories cc on r.car_category_id = cc.id
     left join request_statuses rs on rs.id = r.status
   where r.row_status = 0
-order by r.delivery_start desc
+order by r.delivery_start desc, r.id desc
 
 ", conn))
                 {
@@ -159,6 +161,8 @@ order by r.delivery_start desc
         }
         public async Task<List<Request>> GetRequestsAsync(DateTime dt)
         {
+            throw new NotImplementedException();
+            // Запрос не подтягивает все данные
             using (var conn = _connectionService.GetConnection())
             {
                 conn.Open();
@@ -249,7 +253,10 @@ from requests r
                 Comment = rdr.SafeGetString(27),
                 Reward = rdr.SafeGetDecimal(28),
                 SellingCost = rdr.SafeGetDecimal(29),
-                IsLong = rdr.SafeGetInt32(30) == 0 ? false : true
+                IsLong = rdr.SafeGetInt32(30) == 0 ? false : true,
+                SupplierVat = rdr.SafeGetInt32(31) == 0 ? false : true,
+                CarVat = rdr.SafeGetInt32(32) == 0 ? false : true,
+                AmountComplete = rdr.SafeGetDecimal(33)
             };
         }
     }

@@ -12,6 +12,7 @@ namespace GrandElementApi.Models
         public Address DeliveryAddress { get; set; }
         public Supplier Supplier { get; set; }
         public decimal? Amount { get; set; }
+        public decimal? AmountComplete { get; set; }
         public decimal? AmountOut { get; set; }
         public decimal? AmountIn { get; set; }
         public DateTime? DeliveryStart { get; set; }
@@ -26,6 +27,8 @@ namespace GrandElementApi.Models
         public decimal? Profit { get; set; }
         public ClientShort Client { get; set; }
         public Car Car { get; set; }
+        public bool? SupplierVat { get; set; }
+        public bool? CarVat { get; set; }
         public string Status { get; set; }
         public string Comment { get; set; }
         public decimal? ManagerId { get; set; }

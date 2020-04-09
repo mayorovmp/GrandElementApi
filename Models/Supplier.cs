@@ -5,10 +5,8 @@ using System.Threading.Tasks;
 
 namespace GrandElementApi.Models
 {
-    public class Supplier
+    public class Supplier : SupplierShort
     {
-        public int? Id { get; set; }
-        public string Name { get; set; }
         public string LegalEntity { get; set; }
         public string Address { get; set; }
         public bool VAT { get; set; }

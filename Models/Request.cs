@@ -10,7 +10,7 @@ namespace GrandElementApi.Models
         public int? Id { get; set; }
         public ProductShort Product { get; set; }
         public Address DeliveryAddress { get; set; }
-        public Supplier Supplier { get; set; }
+        public SupplierShort Supplier { get; set; }
         public decimal? Amount { get; set; }
         public decimal? AmountComplete { get; set; }
         public decimal? AmountOut { get; set; }
@@ -26,7 +26,7 @@ namespace GrandElementApi.Models
         public bool IsLong { get; set; }
         public decimal? Profit { get; set; }
         public ClientShort Client { get; set; }
-        public Car Car { get; set; }
+        public CarShort Car { get; set; }
         public bool? SupplierVat { get; set; }
         public bool? CarVat { get; set; }
         public string Status { get; set; }

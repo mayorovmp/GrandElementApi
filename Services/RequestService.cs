@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace GrandElementApi.Services
 {
@@ -22,7 +23,7 @@ namespace GrandElementApi.Services
         public async Task<byte[]> ExcelGetRequestsAsync(DateTime dt) {
             var requests = await AllRequestsAsync();
             byte[] result;
-            var comlumHeadrs = new List<string> { "Дата", "Клиент", "Товар", "Поставщик", 
+            var comlumHeadrs = new List<string> { "Дата", "Клиент", "Товар", "Поставщик",
                 "Контакты водителя", "Цена закупки", "Цена продажи", "Цена перевозки", "Еденица измерения" };
             using (var package = new ExcelPackage()) {
                 var worksheet = package.Workbook.Worksheets.Add(dt.ToString("dd.MM.yyyy")); //Worksheet name
@@ -66,9 +67,54 @@ namespace GrandElementApi.Services
                 }
             }
         }
+        public async Task<Request> Complete(int id) {
 
-        public async Task Add(Request r) {
+            using (var tran = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            using (var conn = _connectionService.GetOpenedConnection())
+            {
 
+                var r = await GetRequestByIdAsync(conn, id);
+                if (GetStatusId(r.Status) == Status.Completed)
+                {
+                    throw new Exception("Заявка уже исполнена!");
+                }
+                using (var cmd = new NpgsqlCommand(@"
+update requests set status = 1
+where id = @id
+", conn))
+                {
+                    cmd.Parameters.AddRange(new[] {
+                        new NpgsqlParameter("id", id)
+                    });
+                    await cmd.ExecuteNonQueryAsync();
+                    await UpdateWeightInLongReq(conn, id);
+                    r = await GetRequestByIdAsync(conn, id);
+                    tran.Complete();
+                    return r;
+                }
+            }
+        }
+        private async Task UpdateWeightInLongReq(NpgsqlConnection conn, int childRequestId)
+        {
+            using (var cmd = new NpgsqlCommand(@"
+update requests set amount_complete = amount_complete + (
+    select r2.amount_out
+    from requests r2
+    where r2.id = @id
+    limit 1)
+where id = (
+    select pr.parent_request_id
+    from part_requests pr
+    where pr.child_request_id = @id
+    limit 1);
+", conn))   {
+                cmd.Parameters.AddRange(new[] {
+                        new NpgsqlParameter("id", childRequestId)
+                    });
+                await cmd.ExecuteNonQueryAsync();
+            }
+        }
+        public async Task<Request> Add(Request r) {
             using (var conn = _connectionService.GetOpenedConnection())
             {
                 using (var cmd = new NpgsqlCommand(
@@ -77,7 +123,7 @@ selling_price, freight_price, unit, freight_cost, profit, client_id, manager_id,
 amount_in, car_category_id, comment, reward, selling_cost, car_id, amount, supplier_vat, car_vat)
 values (@product_id, @delivery_start, @delivery_address_id, @supplier_id, @amount_out, @delivery_end, @is_long, @purchase_price, 
 @selling_price, @freight_price, @unit, @freight_cost, @profit, @client_id, @manager_id, @status, 
-@amount_in, @car_category_id, @comment, @reward, @selling_cost, @car_id, @amount, @supplier_vat, @car_vat)", conn))
+@amount_in, @car_category_id, @comment, @reward, @selling_cost, @car_id, @amount, @supplier_vat, @car_vat) RETURNING id", conn))
                 {
                     cmd.Parameters.AddRange(new[] {
                         r.Product == null ? new NpgsqlParameter("product_id", DBNull.Value) : new NpgsqlParameter("product_id", r.Product.Id),
@@ -106,21 +152,82 @@ values (@product_id, @delivery_start, @delivery_address_id, @supplier_id, @amoun
                         r.SupplierVat == null ? new NpgsqlParameter("supplier_vat", DBNull.Value) : new NpgsqlParameter("supplier_vat", r.SupplierVat.Value? 1 : 0),
                         r.CarVat == null ? new NpgsqlParameter("car_vat", DBNull.Value) : new NpgsqlParameter("car_vat", r.CarVat.Value? 1 : 0)
                     });
-                    await cmd.ExecuteNonQueryAsync();
+
+                    var reader = await cmd.ExecuteReaderAsync();
+                    reader.Read();
+                    int id = reader.GetInt32(0);
+                    return await GetRequestByIdAsync(conn, id);
                 }
             }
         }
+        public async Task LinkRequest(int parentId, int childId)
+        {
+            using (var conn = _connectionService.GetOpenedConnection())
+            {
+                using (var cmd = new NpgsqlCommand(@"
+insert into part_requests(parent_request_id, child_request_id)
+values (@parent_request_id, @child_request_id)
+", conn))
+                {
+                    cmd.Parameters.AddRange(new[] { 
+                        new NpgsqlParameter("parent_request_id", parentId),
+                        new NpgsqlParameter("child_request_id", childId)
+                    });
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
 
-        private int GetStatusId(string status) {
+        }
+        public async Task<Request> GetRequestByIdAsync(NpgsqlConnection conn, int id)
+        {
+            using (var cmd = new NpgsqlCommand(@"
+select r.id, p.id, p.name, da.id, da.name, s.id, s.name, r.amount_out,
+       r.delivery_start, r.delivery_end,
+       r.purchase_price, r.selling_price, r.freight_price, r.unit, r.freight_cost, r.profit,
+       c.id, c.name,
+       cs.id, cs.owner, cs.contacts, cs.comments,
+       cc.id, cc.name, rs.description, r.amount_in, r.amount, r.comment, r.reward, r.selling_cost, r.is_long, r.supplier_vat, r.car_vat, r.amount_complete 
+from requests r
+    left join orders o on r.order_id = o.id
+    left join products p on r.product_id = p.id
+    left join delivery_address da on r.delivery_address_id = da.id
+    left join suppliers s on r.supplier_id = s.id
+    left join clients c on r.client_id = c.id
+    left join cars cs on r.car_id = cs.id
+    left join car_categories cc on r.car_category_id = cc.id
+    left join request_statuses rs on rs.id = r.status
+where r.id = @id
+", conn))
+            {
+                cmd.Parameters.Add(new NpgsqlParameter("id", id));
+                using (var rdr = await cmd.ExecuteReaderAsync()) {
+                    if (rdr.Read())
+                    {
+                        var res = ExtraxtRequest(rdr);
+                        return res;
+                    }
+                    else
+                    {
+                        throw new Exception("Не найдено");
+                    }
+                }
+                    
+            }
+        }
+        private Status GetStatusId(string status) {
             if (status.Equals("активна"))
             {
-                return 0;
+                return Status.Active;
             }
             else if (status.Equals("исполнена"))
             {
-                return 1;
+                return Status.Completed;
             }
             else return 0;
+        }
+        enum Status { 
+            Active,
+            Completed
         }
         public async Task<List<Request>> AllRequestsAsync()
         {
@@ -145,7 +252,6 @@ from requests r
     left join request_statuses rs on rs.id = r.status
   where r.row_status = 0
 order by r.delivery_start desc, r.id desc
-
 ", conn))
                 {
                     var rdr = await cmd.ExecuteReaderAsync();
@@ -157,7 +263,6 @@ order by r.delivery_start desc, r.id desc
                     return res;
                 }
             }
-
         }
         public async Task<List<Request>> GetRequestsAsync(DateTime dt)
         {

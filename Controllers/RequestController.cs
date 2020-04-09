@@ -72,8 +72,39 @@ namespace GrandElementApi.Controllers
         {
             try
             {
-                await _requestService.Add(r);
-                return Ok();
+                var res = await _requestService.Add(r);
+                return Ok(res);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return Problem(e.Message);
+            }
+        }
+
+        [HttpPost("{parentId}")]
+        public async Task<ActionResult> AddPart(Request r, int parentId)
+        {
+            try
+            {
+                r = await _requestService.Add(r);
+                await _requestService.LinkRequest(parentId, r.Id.Value);
+                return Ok(r);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return Problem(e.Message);
+            }
+        }
+
+        [HttpPost("complete/{id}")]
+        public async Task<ActionResult> Complete(int id)
+        {
+            try
+            {
+                var res = await _requestService.Complete(id);
+                return Ok(res);
             }
             catch (Exception e)
             {

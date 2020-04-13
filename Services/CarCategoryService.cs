@@ -1,6 +1,8 @@
-﻿using GrandElementApi.Extensions;
+﻿using GrandElementApi.Data;
+using GrandElementApi.Extensions;
 using GrandElementApi.Interfaces;
 using GrandElementApi.Models;
+using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using NpgsqlTypes;
 using System;
@@ -13,34 +15,24 @@ namespace GrandElementApi.Services
     public class CarCategoryService : ICarCategoryService
     {
         private readonly IConnectionService _connectionService;
+        //private readonly ApplicationContext _db;
         public CarCategoryService(IConnectionService connectionService)
         {
             _connectionService = connectionService;
         }
 
-        public async Task<CarCategory> AddCategoryAsync(string name)
+        public async Task<CarCategory> AddCategoryAsync(CarCategory category)
         {
-            using (var conn = _connectionService.GetConnection())
-            {
-                conn.Open();
-                using (var cmd = new NpgsqlCommand("insert into car_categories(name, row_status) values(@name, 0) RETURNING id, name", conn))
-                {
-                    cmd.Parameters.Add(new NpgsqlParameter<string>("name", name));
-                    var reader = await cmd.ExecuteReaderAsync();
-                    if (reader.HasRows)
-                    {
-                        reader.Read();
-                        CarCategory category = new CarCategory() { Id = reader.GetInt32(0), Name = reader.SafeGetString(1) };
-                        return category;
-                    }
-                    else {
-                        throw new Exception("Категория не создана.");
-                    }
-                }
+            using (var db = new ApplicationContext()) {
+                if (db.CarCategories.Contains(category))
+                    throw new Exception("Запись уже существует");
+                db.CarCategories.Add(category);
+                await db.SaveChangesAsync();
+                return category;
             }
         }
 
-        public async Task<List<CarCategory>> AllCategoriesAsync()
+        public async Task<List<CarCategory>> AllCategoriesAsync2()
         {
             using (var conn = _connectionService.GetConnection())
             {
@@ -58,9 +50,24 @@ namespace GrandElementApi.Services
             }
         }
 
-        public async Task<CarCategory> EditCategoryAsync(CarCategory category)
+        public async Task<List<CarCategory>> AllCategoriesAsync()
         {
+            using var db = new ApplicationContext();
+            return await db.CarCategories.Where(x=> x.Status == Status.Active).ToListAsync();
+        }
 
+        public async Task<CarCategory> EditCategoryAsync(CarCategory category) {
+            using var db = new ApplicationContext();
+            var prevCat = db.CarCategories.FirstOrDefault(x => x.Id == category.Id);
+            if (prevCat == null)
+                throw new Exception("Категория не найдена");
+            prevCat.Name = category.Name;
+            await db.SaveChangesAsync();
+            return prevCat;
+        }
+
+        public async Task<CarCategory> EditCategoryAsync2(CarCategory category)
+        {
             int id;
             if (category.Id.HasValue)
                 id = category.Id.Value;
@@ -90,15 +97,20 @@ namespace GrandElementApi.Services
 
         public async Task DeleteCategoryAsync(int carCategoryId)
         {
-            using (var conn = _connectionService.GetConnection())
-            {
-                conn.Open();
-                using (var cmd = new NpgsqlCommand("update car_categories set row_status = 1 where id = @id", conn))
-                {
-                    cmd.Parameters.AddWithValue("id", carCategoryId);
-                    var reader = await cmd.ExecuteNonQueryAsync();
-                }
-            }
+            using var db = new ApplicationContext();
+            var category = db.CarCategories.FirstOrDefault(x => x.Id == carCategoryId);
+            if (category != null)
+                category.Status = Status.Removed;
+            await db.SaveChangesAsync();
+            //using (var conn = _connectionService.GetConnection())
+            //{
+            //    conn.Open();
+            //    using (var cmd = new NpgsqlCommand("update car_categories set row_status = 1 where id = @id", conn))
+            //    {
+            //        cmd.Parameters.AddWithValue("id", carCategoryId);
+            //        var reader = await cmd.ExecuteNonQueryAsync();
+            //    }
+            //}
         }
 
     }

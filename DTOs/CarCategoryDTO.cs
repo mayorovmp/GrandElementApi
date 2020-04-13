@@ -4,11 +4,20 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrandElementApi.Models
+namespace GrandElementApi.DTOs
 {
-    public class CarCategory : BaseEntity
+    public class CarCategoryDTO
     {
+
         public int? Id { get; set; }
         public string Name { get; set; }
+        public CarCategoryDTO() { }
     }
+
+    public class CarCategoryOnAddDTO
+    {
+        public string Name { get; set; }
+        public CarCategoryOnAddDTO() { }
+    }
+
 }

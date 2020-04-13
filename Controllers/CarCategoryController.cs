@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using GrandElementApi.Data;
+using GrandElementApi.DTOs;
 using GrandElementApi.Interfaces;
 using GrandElementApi.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -15,20 +18,22 @@ namespace GrandElementApi.Controllers
     {
         private readonly ILogger<CarCategoryController> _logger;
         private readonly ICarCategoryService _carCategoryService;
+        private readonly IMapper _mapper;
 
-        public CarCategoryController(ILogger<CarCategoryController> logger, ICarCategoryService carCategoryService)
+        public CarCategoryController(ILogger<CarCategoryController> logger, ICarCategoryService carCategoryService, IMapper mapper)
         {
             _logger = logger;
+            _mapper = mapper;
             _carCategoryService = carCategoryService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<CarCategory>>> Get()
+        public async Task<ActionResult<List<CarCategoryDTO>>> Get()
         {
             try
             {
                 var categories = await _carCategoryService.AllCategoriesAsync();
-                return categories;
+                return _mapper.Map<List<CarCategoryDTO>>(categories);
             }
             catch (Exception e)
             {
@@ -38,12 +43,12 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<CarCategory>> Add(CarCategory categoryReq)
+        public async Task<ActionResult<CarCategoryDTO>> Add(CarCategoryOnAddDTO categoryReq)
         {
             try
             {
-                var category = await _carCategoryService.AddCategoryAsync(categoryReq.Name);
-                return category;
+                var category = await _carCategoryService.AddCategoryAsync(_mapper.Map<CarCategory>(categoryReq));
+                return _mapper.Map<CarCategoryDTO>(category);
             }
             catch (Exception e)
             {
@@ -53,12 +58,13 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<CarCategory>> Edit(CarCategory categoryReq)
+        public async Task<ActionResult<CarCategoryDTO>> Edit(CarCategoryDTO categoryReq)
         {
             try
             {
-                var category = await _carCategoryService.EditCategoryAsync(categoryReq);
-                return category;
+                var editedCat = _mapper.Map<CarCategory>(categoryReq);
+                var category = await _carCategoryService.EditCategoryAsync(editedCat);
+                return _mapper.Map<CarCategoryDTO>(category);
             }
             catch (Exception e)
             {
@@ -68,7 +74,7 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<object>> Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
             try
             {

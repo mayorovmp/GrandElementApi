@@ -10,7 +10,7 @@ namespace GrandElementApi.Interfaces
     {
         public Task<List<CarCategory>> AllCategoriesAsync();
         public Task<CarCategory> EditCategoryAsync(CarCategory category);
-        public Task<CarCategory> AddCategoryAsync(string name);
+        public Task<CarCategory> AddCategoryAsync(CarCategory category);
         public Task DeleteCategoryAsync(int carCategoryId);
     }
 }

@@ -14,6 +14,9 @@ using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using GrandElementApi.Data;
+using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 
 namespace GrandElementApi
 {
@@ -29,6 +32,10 @@ namespace GrandElementApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
+            var conn = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+            services.AddDbContext<ApplicationContext>(op => op.UseNpgsql(conn));
+            services.AddAutoMapper(typeof(Startup));
             services.AddCors();
             services.AddSingleton<ICarCategoryService, CarCategoryService>();
             services.AddSingleton<ISupplierService, SupplierService>();

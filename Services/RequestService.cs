@@ -152,10 +152,12 @@ values (@product_id, @delivery_start, @delivery_address_id, @supplier_id, @amoun
                         r.SupplierVat == null ? new NpgsqlParameter("supplier_vat", DBNull.Value) : new NpgsqlParameter("supplier_vat", r.SupplierVat.Value? 1 : 0),
                         r.CarVat == null ? new NpgsqlParameter("car_vat", DBNull.Value) : new NpgsqlParameter("car_vat", r.CarVat.Value? 1 : 0)
                     });
-
-                    var reader = await cmd.ExecuteReaderAsync();
-                    reader.Read();
-                    int id = reader.GetInt32(0);
+                    int id;
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        reader.Read();
+                        id = reader.GetInt32(0);
+                    }
                     return await GetRequestByIdAsync(conn, id);
                 }
             }
@@ -231,9 +233,8 @@ where r.id = @id
         }
         public async Task<List<Request>> AllRequestsAsync()
         {
-            using (var conn = _connectionService.GetConnection())
+            using (var conn = _connectionService.GetOpenedConnection())
             {
-                conn.Open();
                 using (var cmd = new NpgsqlCommand(@"
 select r.id, p.id, p.name, da.id, da.name, s.id, s.name, r.amount_out,
        r.delivery_start, r.delivery_end,
@@ -327,6 +328,8 @@ from requests r
 
         }
         private static Request ExtraxtRequest(NpgsqlDataReader rdr) {
+            if (!rdr.IsOnRow)
+                throw new Exception("Ошибка при извлечении Заявки");
             return new Request()
             {
                 Id = rdr.GetInt32(0),
@@ -363,6 +366,46 @@ from requests r
                 CarVat = rdr.SafeGetInt32(32) == 0 ? false : true,
                 AmountComplete = rdr.SafeGetDecimal(33)
             };
+        }
+        public async Task<Request> GetLastRequestByClient(int clientId) {
+            using (var conn = _connectionService.GetOpenedConnection())
+            {
+                using (var cmd = new NpgsqlCommand(@"
+select r.id, p.id, p.name, da.id, da.name, s.id, s.name, r.amount_out,
+       r.delivery_start, r.delivery_end,
+       r.purchase_price, r.selling_price, r.freight_price, r.unit, r.freight_cost, r.profit,
+       c.id, c.name,
+       cs.id, cs.owner, cs.contacts, cs.comments,
+       cc.id, cc.name, rs.description, r.amount_in, r.amount, r.comment, r.reward, r.selling_cost, r.is_long, r.supplier_vat, r.car_vat, r.amount_complete 
+from requests r
+    left join orders o on r.order_id = o.id
+    left join products p on r.product_id = p.id
+    left join delivery_address da on r.delivery_address_id = da.id
+    left join suppliers s on r.supplier_id = s.id
+    left join clients c on r.client_id = c.id
+    left join cars cs on r.car_id = cs.id
+    left join car_categories cc on r.car_category_id = cc.id
+    left join request_statuses rs on rs.id = r.status
+  where 
+r.row_status = 0
+and r.client_id = @id
+", conn))
+                {
+                    cmd.Parameters.AddRange(new[] {
+                        new NpgsqlParameter("id", clientId) 
+                    });
+                    var rdr = await cmd.ExecuteReaderAsync();
+                    if (rdr.Read())
+                    {
+                        var res = ExtraxtRequest(rdr);
+                        return res;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
         }
     }
 }

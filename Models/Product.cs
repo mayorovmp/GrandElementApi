@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace GrandElementApi.Models
 {
-    public class Product
+    public class Product : ProductShort
     {
         public int? Id { get; set; }
         public string Name { get; set; }

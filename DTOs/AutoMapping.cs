@@ -1,9 +1,5 @@
 ﻿using AutoMapper;
-using GrandElementApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using GrandElementApi.Data;
 
 namespace GrandElementApi.DTOs
 {
@@ -15,6 +11,46 @@ namespace GrandElementApi.DTOs
             CreateMap<CarCategory, CarCategoryDTO>().ForMember(x => x.Name, opt => opt.MapFrom(src => src.Name));
 
             CreateMap<CarCategoryOnAddDTO, CarCategory>().ForMember(x => x.Name, opt => opt.MapFrom(src => src.Name));
+
+            CreateMap<Product, ProductDTO>().ForMember(x=>x.Name, opt=>opt.MapFrom(src=>src.Name));
+            CreateMap<ProductDTO, Product>().ForMember(x => x.Name, opt => opt.MapFrom(src => src.Name));
+            CreateMap<ProductOnAddDTO, Product>().ForMember(x => x.Name, opt => opt.MapFrom(src => src.Name));
+
+            CreateMap<Car, CarDTO>().ForMember(x => x.Vat, 
+                opt => opt.MapFrom((src, _)=> {
+                    bool? res;
+                    if (src.Vat.HasValue)
+                        res = src.Vat.Value == 1;
+                    else
+                        res = null;
+                    return res;}));
+
+            CreateMap<CarOnAddDTO, Car>().ForMember(x => x.Vat,
+                opt => opt.MapFrom((src, _) => {
+                    int? t;
+                    if (!src.Vat.HasValue)
+                    {
+                        t = null;
+                    }
+                    else { 
+                        t = src.Vat.Value ? 1 : 0;
+                    }
+                    return t;
+                }));
+            CreateMap<CarDTO, Car>().ForMember(x => x.Vat,
+                opt => opt.MapFrom((src, _) => {
+                    int? t;
+                    if (!src.Vat.HasValue)
+                    {
+                        t = null;
+                    }
+                    else
+                    {
+                        t = src.Vat.Value ? 1 : 0;
+                    }
+                    return t;
+                }));
+
         }
     }
 }

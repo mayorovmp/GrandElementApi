@@ -6,7 +6,6 @@ using AutoMapper;
 using GrandElementApi.Data;
 using GrandElementApi.DTOs;
 using GrandElementApi.Interfaces;
-using GrandElementApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 

@@ -1,4 +1,5 @@
-﻿using GrandElementApi.Extensions;
+﻿using GrandElementApi.Data;
+using GrandElementApi.Extensions;
 using GrandElementApi.Interfaces;
 using GrandElementApi.Models;
 using Npgsql;
@@ -333,7 +334,7 @@ from requests r
             return new Request()
             {
                 Id = rdr.GetInt32(0),
-                Product = rdr.SafeGetInt32(1) != null ? new Product() { Id = rdr.SafeGetInt32(1), Name = rdr.SafeGetString(2) } : null,
+                Product = rdr.SafeGetInt32(1) != null ? new Models.Product() { Id = rdr.SafeGetInt32(1), Name = rdr.SafeGetString(2) } : null,
                 DeliveryAddress = rdr.SafeGetInt32(3) != null ? new Address() { Id = rdr.SafeGetInt32(3), Name = rdr.SafeGetString(4) } : null,
                 Supplier = rdr.SafeGetInt32(5) != null ? new Supplier() { Id = rdr.SafeGetInt32(5), Name = rdr.SafeGetString(6) } : null,
                 AmountOut = rdr.SafeGetDecimal(7),
@@ -346,7 +347,7 @@ from requests r
                 FreightCost = rdr.SafeGetDecimal(14),
                 Profit = rdr.SafeGetDecimal(15),
                 Client = rdr.SafeGetInt32(16) != null ? new Client() { Id = rdr.SafeGetInt32(16), Name = rdr.SafeGetString(17) } : null,
-                Car = rdr.SafeGetInt32(18) != null ? new Car()
+                Car = rdr.SafeGetInt32(18) != null ? new Models.Car()
                 {
                     Id = rdr.SafeGetInt32(18),
                     Owner = rdr.SafeGetString(19),

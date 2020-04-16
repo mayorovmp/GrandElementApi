@@ -53,7 +53,8 @@ namespace GrandElementApi.Services
         public async Task<List<CarCategory>> AllCategoriesAsync()
         {
             using var db = new ApplicationContext();
-            return await db.CarCategories.Where(x=> x.Status == Status.Active).ToListAsync();
+            var res = await db.CarCategories.Where(x=> x.Status == Status.Active).Include(x=>x.Cars).ToListAsync();
+            return res;
         }
 
         public async Task<CarCategory> EditCategoryAsync(CarCategory category) {
@@ -64,35 +65,6 @@ namespace GrandElementApi.Services
             prevCat.Name = category.Name;
             await db.SaveChangesAsync();
             return prevCat;
-        }
-
-        public async Task<CarCategory> EditCategoryAsync2(CarCategory category)
-        {
-            int id;
-            if (category.Id.HasValue)
-                id = category.Id.Value;
-            else
-                throw new ArgumentException("Идентификатор записи пустой");
-
-            using (var conn = _connectionService.GetConnection())
-            {
-                conn.Open();
-                using (var cmd = new NpgsqlCommand("update car_categories set name = @name where id=@id returning id, name", conn))
-                {
-                    cmd.Parameters.Add(new NpgsqlParameter<string>("name", category.Name));
-                    cmd.Parameters.Add(new NpgsqlParameter<int>("id", id));
-                    var reader = await cmd.ExecuteReaderAsync();
-                    if (reader.HasRows)
-                    {
-                        reader.Read();
-                        return new CarCategory() { Id = reader.SafeGetInt32(0), Name = reader.SafeGetString(1) };
-                    }
-                    else
-                    {
-                        throw new Exception("Запись не изменена");
-                    }
-                }
-            }
         }
 
         public async Task DeleteCategoryAsync(int carCategoryId)

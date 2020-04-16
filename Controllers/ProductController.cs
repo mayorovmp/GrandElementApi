@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GrandElementApi.Models;
+using AutoMapper;
+using GrandElementApi.Data;
+using GrandElementApi.DTOs;
 using GrandElementApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,19 +18,21 @@ namespace GrandElementApi.Controllers
     {
         private readonly ILogger<ProductController> _logger;
         private readonly ProductService _productService;
+        private readonly IMapper _mapper;
 
-        public ProductController(ILogger<ProductController> logger, ProductService productService)
+        public ProductController(ILogger<ProductController> logger, ProductService productService, IMapper mapper)
         {
             _logger = logger;
+            _mapper = mapper;
             _productService = productService;
         }
         [HttpGet]
-        public async Task<ActionResult<List<ProductShort>>> Get()
+        public async Task<ActionResult<List<ProductDTO>>> Get()
         {
             try
             {
                 var products = await _productService.AllProductsAsync();
-                return products;
+                return _mapper.Map<List<ProductDTO>>(products);
             }
             catch (Exception e)
             {
@@ -37,12 +41,13 @@ namespace GrandElementApi.Controllers
             }
         }
         [HttpPost]
-        public async Task<ActionResult<ProductShort>> Add(ProductShort product)
+        public async Task<ActionResult<ProductDTO>> Add(ProductOnAddDTO product)
         {
             try
             {
-                product = await _productService.AddProductAsync(product);
-                return product;
+
+                var newProduct = await _productService.AddProductAsync(_mapper.Map<Product>(product));
+                return _mapper.Map<ProductDTO>(newProduct);
             }
             catch (Exception e)
             {
@@ -65,12 +70,12 @@ namespace GrandElementApi.Controllers
             }
         }
         [HttpPut]
-        public async Task<ActionResult<ProductShort>> Edit(ProductShort product)
+        public async Task<ActionResult<ProductDTO>> Edit(ProductDTO product)
         {
             try
             {
-                var res = await _productService.EditProductAsync(product);
-                return res;
+                var res = await _productService.EditProductAsync(_mapper.Map<Product>(product));
+                return _mapper.Map<ProductDTO>(res);
             }
             catch (Exception e)
             {

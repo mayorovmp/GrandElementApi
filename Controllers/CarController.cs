@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GrandElementApi.Models;
+using AutoMapper;
+using GrandElementApi.Data;
+using GrandElementApi.DTOs;
 using GrandElementApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,20 +18,22 @@ namespace GrandElementApi.Controllers
     {
         private readonly ILogger<CarController> _logger;
         private readonly CarService _carService;
+        private readonly IMapper _mapper;
 
-        public CarController(ILogger<CarController> logger, CarService carService)
+        public CarController(ILogger<CarController> logger, CarService carService, IMapper mapper)
         {
             _logger = logger;
             _carService = carService;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Car>>> Get()
+        public async Task<ActionResult<List<CarDTO>>> Get()
         {
             try
             {;
                 var data = await _carService.AllCarsAsync();
-                return data;
+                return _mapper.Map<List<CarDTO>>(data);
             }
             catch (Exception e)
             {
@@ -39,7 +43,7 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Car>> Add(Car car)
+        public async Task<ActionResult<CarDTO>> Add(CarOnAddDTO car)
         {
             if(car.Owner == null)
                 return ValidationProblem("Укажите владельца");
@@ -47,8 +51,8 @@ namespace GrandElementApi.Controllers
                 return ValidationProblem("Укажите категорию");
             try
             {
-                var data = await _carService.AddCarAsync(car);
-                return data;
+                var data = await _carService.AddCarAsync(_mapper.Map<Car>(car));
+                return _mapper.Map<CarDTO>(data);
             }
             catch (Exception e)
             {
@@ -58,12 +62,12 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<Car>> Edit(Car car)
+        public async Task<ActionResult<CarDTO>> Edit(CarDTO car)
         {
             try
             {
-                var data = await _carService.EditCarAsync(car);
-                return data;
+                var data = await _carService.EditCarAsync(_mapper.Map<Car>(car));
+                return _mapper.Map<CarDTO>(data);
             }
             catch (Npgsql.PostgresException e)
             {
@@ -78,7 +82,7 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpDelete("{carId}")]
-        public async Task<ActionResult<object>> Delete(int carId)
+        public async Task<ActionResult> Delete(int carId)
         {
             try
             {

@@ -5,14 +5,15 @@ using System.Threading.Tasks;
 
 namespace GrandElementApi.DTOs
 {
-    public class ProductDTO
+    public class DeliveryContactDTO
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public string Communication { get; set; }
     }
-    
-    public class ProductOnAddDTO
+    public class DeliveryContactOnAddDTO
     {
         public string Name { get; set; }
+        public string Communication { get; set; }
     }
 }

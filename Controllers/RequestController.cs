@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GrandElementApi.Models;
+using AutoMapper;
+using GrandElementApi.Data;
+using GrandElementApi.DTOs;
 using GrandElementApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,19 +18,40 @@ namespace GrandElementApi.Controllers
     {
         private readonly ILogger<RequestController> _logger;
         private readonly RequestService _requestService;
+        private readonly IMapper _mapper;
 
-        public RequestController(ILogger<RequestController> logger, RequestService requestService)
+        public RequestController(ILogger<RequestController> logger, RequestService requestService, IMapper mapper)
         {
             _logger = logger;
             _requestService = requestService;
+            _mapper = mapper;
         }
         [HttpGet]
-        public async Task<ActionResult<List<Request>>> Get()
+        public async Task<ActionResult<List<RequestDTO>>> Get()
         {
             try
             {
                 var requests = await _requestService.AllRequestsAsync();
-                return requests;
+                return _mapper.Map<List<RequestDTO>>(requests);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return Problem(e.Message);
+            }
+        }
+        [HttpGet("last")]
+        public async Task<ActionResult<RequestDTO>> Get(
+            [FromQuery(Name ="clientId")]int? clientId, 
+            [FromQuery(Name = "addressId")]int? addressId,
+            [FromQuery(Name = "productId")]int? productId,
+            [FromQuery(Name = "supplierId")]int? supplierId,
+            [FromQuery(Name = "carId")]int? carId)
+        {
+            try
+            {
+                var requests = await _requestService.GetLastRequest(clientId, addressId, productId, supplierId, carId);
+                return _mapper.Map<RequestDTO>(requests);
             }
             catch (Exception e)
             {
@@ -53,12 +76,12 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpGet("{date}")]
-        public async Task<ActionResult<List<Request>>> GetByDate(DateTime date)
+        public async Task<ActionResult<List<RequestDTO>>> GetByDate(DateTime date)
         {
             try
             {
                 var requests = await _requestService.GetRequestsAsync(date);
-                return requests;
+                return _mapper.Map<List<RequestDTO>>(requests);
             }
             catch (Exception e)
             {
@@ -68,12 +91,12 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Add(Request r)
+        public async Task<ActionResult<RequestDTO>> Add(RequestOnAddDTO r)
         {
             try
             {
-                var res = await _requestService.Add(r);
-                return Ok(res);
+                var res = await _requestService.Add(_mapper.Map<Request>(r));
+                return _mapper.Map<RequestDTO>(res);
             }
             catch (Exception e)
             {
@@ -88,7 +111,7 @@ namespace GrandElementApi.Controllers
             try
             {
                 r = await _requestService.Add(r);
-                await _requestService.LinkRequest(parentId, r.Id.Value);
+                await _requestService.LinkRequest(parentId, r.Id);
                 return Ok(r);
             }
             catch (Exception e)
@@ -114,11 +137,11 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult> Edit(Request r)
+        public async Task<ActionResult> Edit(RequestOnEditDTO r)
         {
             try
             {
-                await _requestService.EditAsync(r);
+                await _requestService.EditAsync(_mapper.Map<Request>(r));
                 return Ok();
             }
             catch (Exception e)
@@ -135,11 +158,6 @@ namespace GrandElementApi.Controllers
             {
                 await _requestService.Delete(id);
                 return Ok();
-            }
-            catch (Npgsql.PostgresException e)
-            {
-                _logger.LogError(e.ToString());
-                return Problem();
             }
             catch (Exception e)
             {

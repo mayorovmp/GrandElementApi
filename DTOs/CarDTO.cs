@@ -14,7 +14,7 @@ namespace GrandElementApi.DTOs
         public string Comments { get; set; }
         public decimal? FreightPrice { get; set; }
         public string Unit { get; set; }
-        public bool? Vat { get; set; }
+        public bool Vat { get; set; }
 
         public virtual CarCategoryDTO CarCategory { get; set; }
     }
@@ -26,7 +26,7 @@ namespace GrandElementApi.DTOs
         public string Comments { get; set; }
         public decimal? FreightPrice { get; set; }
         public string Unit { get; set; }
-        public bool? Vat { get; set; }
+        public bool Vat { get; set; }
 
         public virtual CarCategoryDTO CarCategory { get; set; }
     }

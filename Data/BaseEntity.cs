@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 
 namespace GrandElementApi.Data
 {
+    public enum RowStatus
+    {
+        Active,
+        Removed
+    }
     public class BaseEntity
     {
         [Column("created")]
@@ -19,11 +24,6 @@ namespace GrandElementApi.Data
 
         [Column("row_status")]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Status? Status { get; set; }
-    }
-    public enum Status
-    {
-        Active,
-        Removed
+        public RowStatus? RowStatus { get; set; }
     }
 }

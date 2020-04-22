@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using GrandElementApi.Models;
+using AutoMapper;
+using GrandElementApi.Data;
+using GrandElementApi.DTOs;
 using GrandElementApi.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -16,20 +16,22 @@ namespace GrandElementApi.Controllers
     {
         private readonly ILogger<ClientController> _logger;
         private readonly ClientService _clientService;
+        private readonly IMapper _mapper;
 
-        public ClientController(ILogger<ClientController> logger, ClientService clientService)
+        public ClientController(ILogger<ClientController> logger, ClientService clientService, IMapper mapper)
         {
             _logger = logger;
+            _mapper = mapper;
             _clientService = clientService;
         }
         // GET: Client
         [HttpGet]
-        public async Task<ActionResult<List<Client>>> Get()
+        public async Task<ActionResult<List<ClientDTO>>> Get()
         {
             try
             {
                 var res = await _clientService.AllClientsAsync();
-                return res;
+                return _mapper.Map<List<ClientDTO>>(res);
             }
             catch (Exception e)
             {
@@ -38,17 +40,12 @@ namespace GrandElementApi.Controllers
             }
         }
         [HttpPut]
-        public async Task<ActionResult<Client>> Edit(Client client)
+        public async Task<ActionResult<ClientDTO>> Edit(ClientOnEditDTO client)
         {
             try
             {
-                var data = await _clientService.EditClientAsync(client);
-                return data;
-            }
-            catch (Npgsql.PostgresException e)
-            {
-                _logger.LogError(e.ToString());
-                return Problem();
+                var data = await _clientService.EditClientAsync(_mapper.Map<Client>(client));
+                return _mapper.Map<ClientDTO>(data);
             }
             catch (Exception e)
             {
@@ -57,12 +54,12 @@ namespace GrandElementApi.Controllers
             }
         }
         [HttpPost]
-        public async Task<ActionResult<Client>> Add(Client client)
+        public async Task<ActionResult<ClientDTO>> Add(ClientOnAddDTO client)
         {
             try
             {
-                var data = await _clientService.AddClient(client);
-                return data;
+                var data = await _clientService.AddClient(_mapper.Map<Client>(client));
+                return _mapper.Map<ClientDTO>(data);
             }
             catch (Exception e)
             {
@@ -71,17 +68,12 @@ namespace GrandElementApi.Controllers
             }
         }
         [HttpDelete("{id}")]
-        public async Task<ActionResult<object>> Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
             try
             {
                 await _clientService.DeleteClient(id);
                 return Ok();
-            }
-            catch (Npgsql.PostgresException e)
-            {
-                _logger.LogError(e.ToString());
-                return Problem();
             }
             catch (Exception e)
             {

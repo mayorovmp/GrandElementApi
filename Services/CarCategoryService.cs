@@ -53,7 +53,7 @@ namespace GrandElementApi.Services
         public async Task<List<CarCategory>> AllCategoriesAsync()
         {
             using var db = new ApplicationContext();
-            var res = await db.CarCategories.Where(x=> x.Status == Status.Active).Include(x=>x.Cars).ToListAsync();
+            var res = await db.CarCategories.Where(x=> x.RowStatus == RowStatus.Active).Include(x=>x.Cars).ToListAsync();
             return res;
         }
 
@@ -72,7 +72,7 @@ namespace GrandElementApi.Services
             using var db = new ApplicationContext();
             var category = db.CarCategories.FirstOrDefault(x => x.Id == carCategoryId);
             if (category != null)
-                category.Status = Status.Removed;
+                category.RowStatus = RowStatus.Removed;
             await db.SaveChangesAsync();
             //using (var conn = _connectionService.GetConnection())
             //{

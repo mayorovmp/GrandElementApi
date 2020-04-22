@@ -25,7 +25,7 @@ namespace GrandElementApi.Services
                 var car = await db.Cars.FindAsync(carId);
                 if (car == null)
                     throw new Exception("Идентификатор перевозчика не найден");
-                car.Status = Status.Removed;
+                car.RowStatus = RowStatus.Removed;
                 await db.SaveChangesAsync();
             }
             //using (var conn = _connectionService.GetConnection())
@@ -166,7 +166,7 @@ namespace GrandElementApi.Services
         public async Task<List<Car>> AllCarsAsync()
         {
             using (var db = new ApplicationContext()) {
-                return await db.Cars.Where(x => x.Status == Status.Active).Include(x=>x.CarCategory).ToListAsync();
+                return await db.Cars.Where(x => x.RowStatus == RowStatus.Active).Include(x=>x.CarCategory).ToListAsync();
             }
 //            using (var conn = _connectionService.GetConnection())
 //            {

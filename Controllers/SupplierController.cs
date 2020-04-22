@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GrandElementApi.Interfaces;
-using GrandElementApi.Models;
+using GrandElementApi.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using GrandElementApi.DTOs;
+using AutoMapper;
 
 namespace GrandElementApi.Controllers
 {
@@ -16,20 +18,22 @@ namespace GrandElementApi.Controllers
     {
         private readonly ILogger<SupplierController> _logger;
         private readonly ISupplierService _supplierService;
+        private readonly IMapper _mapper;
 
-        public SupplierController(ILogger<SupplierController> logger, ISupplierService supplierService)
+        public SupplierController(ILogger<SupplierController> logger, ISupplierService supplierService, IMapper mapper)
         {
             _logger = logger;
             _supplierService = supplierService;
+            _mapper = mapper;
         }
 
         [HttpPost]
-        public async Task<ActionResult<Supplier>> Add(Supplier supplier)
+        public async Task<ActionResult<SupplierDTO>> Add(SupplierOnAddDTO supplier)
         {
             try
             {
-                supplier = await _supplierService.AddSupplierAsync(supplier);
-                return supplier;
+                var r = await _supplierService.AddSupplierAsync(_mapper.Map<Supplier>(supplier));
+                return _mapper.Map<SupplierDTO>(r);
             }
             catch (Exception e)
             {
@@ -38,12 +42,12 @@ namespace GrandElementApi.Controllers
             }
         }
         [HttpGet]
-        public async Task<ActionResult<List<Supplier>>> Get()
+        public async Task<ActionResult<List<SupplierDTO>>> Get()
         {
             try
             {
                 var suppliers = await _supplierService.AllSuppliersAsync();
-                return suppliers;
+                return _mapper.Map<List<SupplierDTO>>(suppliers);
             }
             catch (Exception e)
             {
@@ -52,12 +56,12 @@ namespace GrandElementApi.Controllers
             }
         }
         [HttpGet("{productId}")]
-        public async Task<ActionResult<List<Supplier>>> GetByProd(int productId)
+        public async Task<ActionResult<List<SupplierDTO>>> GetByProd(int productId)
         {
             try
             {
                 var suppliers = await _supplierService.SuppliersByProductIdAsync(productId);
-                return suppliers;
+                return _mapper.Map<List<SupplierDTO>>(suppliers);
             }
             catch (Exception e)
             {
@@ -66,12 +70,12 @@ namespace GrandElementApi.Controllers
             }
         }
         [HttpPut]
-        public async Task<ActionResult<Supplier>> Edit(Supplier supplier)
+        public async Task<ActionResult<SupplierDTO>> Edit(SupplierOnEditDTO supplier)
         {
             try
             {
-                var data = await _supplierService.EditSupplierAsync(supplier);
-                return data;
+                var data = await _supplierService.EditSupplierAsync(_mapper.Map<Supplier>(supplier));
+                return _mapper.Map<SupplierDTO>(data);
             }
             catch (Npgsql.PostgresException e)
             {
@@ -91,11 +95,6 @@ namespace GrandElementApi.Controllers
             {
                 await _supplierService.DeleteSupplierAsync(id);
                 return Ok();
-            }
-            catch (Npgsql.PostgresException e)
-            {
-                _logger.LogError(e.ToString());
-                return Problem();
             }
             catch (Exception e)
             {

@@ -21,7 +21,7 @@ namespace GrandElementApi.Services
         public async Task<List<Data.Product>> AllProductsAsync()
         {
             using (var db = new ApplicationContext()) {
-                return  await db.Products.Where(x => x.Status == Status.Active).ToListAsync();
+                return  await db.Products.Where(x => x.RowStatus == RowStatus.Active).ToListAsync();
             }
             //using (var conn = _connectionService.GetConnection())
             //{
@@ -72,7 +72,7 @@ namespace GrandElementApi.Services
                 var prod = db.Products.Find(productId);
                 if (prod == null)
                     throw new Exception("Товар не найден");
-                prod.Status = Status.Removed;
+                prod.RowStatus = RowStatus.Removed;
                 await db.SaveChangesAsync();
             }
             //using (var conn = _connectionService.GetConnection())

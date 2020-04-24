@@ -1,10 +1,8 @@
 ﻿using GrandElementApi.Interfaces;
-using GrandElementApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System.Net;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +12,7 @@ namespace GrandElementApi.Middlewares
     public class TokenMiddleware
     {
         private readonly RequestDelegate _next;
-        IUserService _userService;
+        private readonly IUserService _userService;
 
         public TokenMiddleware(RequestDelegate next, IUserService userService)
         {

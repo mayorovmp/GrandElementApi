@@ -50,55 +50,28 @@ namespace GrandElementApi.Services
         }
         public async Task<Client> EditClientAsync(Client client)
         {
-            using (var db = new ApplicationContext()) {
-                var storedClient = db.Clients
-                    .Include(c=>c.Addresses)
-                        .ThenInclude(a=>a.Contacts).FirstOrDefault(x => x.Id == client.Id);
-                if (storedClient == null)
-                    throw new Exception("Клиент не найден");
-                storedClient.Name = client.Name;
+            using var db = new ApplicationContext();
+            var storedClient = db.Clients
+                .Include(c => c.Addresses)
+                    .ThenInclude(a => a.Contacts).FirstOrDefault(x => x.Id == client.Id);
+            if (storedClient == null)
+                throw new Exception("Клиент не найден");
+            storedClient.Name = client.Name;
 
-                // Удалим все адреса и контакты
-                foreach (var ad in storedClient.Addresses) {
-                    ad.RowStatus = RowStatus.Removed;
-                    foreach (var c in ad.Contacts)
-                    {
-                        c.RowStatus = RowStatus.Removed;
-                    }
+            // Удалим все адреса и контакты
+            foreach (var ad in storedClient.Addresses)
+            {
+                ad.RowStatus = RowStatus.Removed;
+                foreach (var c in ad.Contacts)
+                {
+                    c.RowStatus = RowStatus.Removed;
                 }
-
-                storedClient.Addresses = client.Addresses;
-
-                await db.SaveChangesAsync();
-                return storedClient;
-                //// Удаляем старые адреса
-                //foreach (var da in oldClient.Addresses)
-                //{
-                //    da.Status = Status.Removed;
-                //    foreach (var dc in da.Contacts)
-                //    {
-                //        dc.Status = Status.Removed;
-                //    }
-                //}
-                //// Цепляем новые адреса
-                //db.DeliveryAddresses.AddRange(client.Addresses);
-                //oldClient.Addresses = client.Addresses;
-                //db.SaveChanges();
-                //return oldClient;
             }
-            //using (var tran = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-            //using (var conn = _connectionService.GetOpenedConnection())
-            //using (var cmd = new NpgsqlCommand("update clients set name=@name where id = @id returning id, name", conn))
-            //{
-            //    cmd.Parameters.Add(new NpgsqlParameter<int>("id", client.Id.Value));
-            //    cmd.Parameters.Add(new NpgsqlParameter<string>("name", client.Name));
-            //    await cmd.ExecuteNonQueryAsync();
-            //    await DeleteDeliveryAddressesAsync(conn, client.Id.Value);
-            //    await AddDeliveryAddressAsync(conn, client);
-            //    client = await GetClientAsync(conn, client.Id.Value);
-            //    tran.Complete();
-            //    return client;
-            //}
+
+            storedClient.Addresses = client.Addresses;
+
+            await db.SaveChangesAsync();
+            return storedClient;
         }
         public async Task<Client> AddClient(Client client)
         {
@@ -106,24 +79,6 @@ namespace GrandElementApi.Services
             db.Clients.Add(client);
             await db.SaveChangesAsync();
             return client;
-            //throw new NotImplementedException();
-            //using (var tran = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-            //using (var conn = _connectionService.GetOpenedConnection())
-            //{
-            //    using (var cmd = new NpgsqlCommand("insert into clients(name) values(@name) returning id", conn))
-            //    {
-            //        cmd.Parameters.Add(new NpgsqlParameter<string>("name", client.Name));
-            //        using (var reader = await cmd.ExecuteReaderAsync())
-            //            if (reader.HasRows)
-            //            {
-            //                reader.Read();
-            //                client.Id = reader.SafeGetInt32(0);
-            //            }
-            //    }
-            //    await AddDeliveryAddressAsync(conn, client);
-            //    tran.Complete();
-            //}
-            //return client;
         }
         
         public async Task<List<Client>> AllClientsAsync()

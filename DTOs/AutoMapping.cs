@@ -91,14 +91,13 @@ namespace GrandElementApi.DTOs
                 .ForMember(dest=>dest.Status, 
                     opt=>opt.MapFrom(
                         (src, _) => {
-                            switch (src.Status) {
-                                case RequestStatus.Active: 
-                                    return "Активн.";
-                                case RequestStatus.Completed:
-                                    return "Заверш.";
-                                default: return "Не определен.";
-                            }
-                    }))
+                            return src.Status switch
+                            {
+                                RequestStatus.Active => "Активн.",
+                                RequestStatus.Completed => "Заверш.",
+                                _ => "Не определен.",
+                            };
+                        }))
                 .ForMember(d=>d.CarVat, opt=>opt.MapFrom(
                     (src, _) =>
                     {

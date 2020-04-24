@@ -10,7 +10,6 @@ namespace GrandElementApi.Data
 
         public int Id { get; set; }
         public string Owner { get; set; }
-        public string StateNumber { get; set; }
         public string Contacts { get; set; }
         public string Comments { get; set; }
         public int? CarCategoryId { get; set; }

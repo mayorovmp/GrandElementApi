@@ -84,11 +84,6 @@ namespace GrandElementApi.Data
                     .HasColumnType("character varying")
                     .HasComment("Владелец автомобиля");
 
-                entity.Property(e => e.StateNumber)
-                    .HasColumnName("state_number")
-                    .HasColumnType("character varying")
-                    .HasComment("гос. номер");
-
                 entity.Property(e => e.Unit)
                     .HasColumnName("unit")
                     .HasColumnType("character varying")

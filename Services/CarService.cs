@@ -77,7 +77,6 @@ namespace GrandElementApi.Services
                 {
                     throw new Exception("Идентификатор перевозчика не найден.");
                 }
-                storedCar.StateNumber = car.StateNumber;
                 storedCar.Owner = car.Owner;
                 storedCar.Unit = car.Unit;
                 storedCar.Vat = car.Vat;

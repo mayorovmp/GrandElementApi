@@ -48,7 +48,26 @@ namespace GrandElementApi
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Grand Element API", Version = "v1", Description= "Put-update data, Post-create data, Get-retrieve data, Delete-remove one element." });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Grand Element API", Version = "v1", Description = "Put-update data, Post-create data, Get-retrieve data, Delete-remove one element." });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme() { In = ParameterLocation.Header, Name = "Authorization", Type = SecuritySchemeType.ApiKey });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                    {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id = "Bearer"
+                                },
+                                Scheme = "oauth2",
+                                Name = "Authorization",
+                                In = ParameterLocation.Header,
+
+                            },
+                            new List<string>()
+                        }
+                    });
             });
         }
 

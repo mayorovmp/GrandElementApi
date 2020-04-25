@@ -13,10 +13,8 @@ namespace GrandElementApi.Services
 {
     public class ClientService
     {
-        private readonly IConnectionService _connectionService;
-        public ClientService(IConnectionService connectionService)
+        public ClientService()
         {
-            _connectionService = connectionService;
         }
         public async Task DeleteClient(int id)
         {
@@ -36,17 +34,6 @@ namespace GrandElementApi.Services
                 }
                 await db.SaveChangesAsync();
             }
-            //using (var tran = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-            //using (var conn = _connectionService.GetOpenedConnection())
-            //{
-            //    using (var cmd = new NpgsqlCommand("update clients set row_status=1 where id = @id", conn))
-            //    {
-            //        cmd.Parameters.Add(new NpgsqlParameter<int>("id", id));
-            //        var affectedRows = await cmd.ExecuteNonQueryAsync();
-            //    }
-            //    await DeleteDeliveryAddressesAsync(conn, id);
-            //    tran.Complete();
-            //}
         }
         public async Task<Client> EditClientAsync(Client client)
         {

@@ -1,6 +1,7 @@
-﻿using GrandElementApi.Extensions;
+﻿using GrandElementApi.Data;
+using GrandElementApi.Extensions;
 using GrandElementApi.Interfaces;
-using GrandElementApi.Models;
+using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System;
 using System.Collections.Generic;
@@ -20,23 +21,21 @@ namespace GrandElementApi.Services
 
         public async Task<User> GetUserAsync(string login, string pass)
         {
-            using (var conn = _connectionService.GetConnection())
-            {
-                conn.Open();
-                using (var cmd = new NpgsqlCommand("select id, login, pass, name from users where login = @login and pass = @pass", conn))
-                {
-                    cmd.Parameters.AddWithValue("login", login);
-                    cmd.Parameters.AddWithValue("pass", pass);
-                    var reader = await cmd.ExecuteReaderAsync();
+            using var db = new ApplicationContext();
+            var user = await db.Users.FirstOrDefaultAsync(u=>u.Login == login && u.Pass == pass);
+            if(user == null)
+                throw new Exception($"Имя {login} и пароль не найдены.");
+            return user;
+        }
 
-                    if (!reader.HasRows)
-                        throw new ArgumentException($"Имя {login} и пароль не найдены.");
-                    else {
-                        reader.Read();
-                        return new User() {Id = reader.GetInt32(0), Login = reader.SafeGetString(1), Password=reader.SafeGetString(2), Name=reader.SafeGetString(3) };
-                    }
-                }
-            }
+        public async Task<User> GetUserAsync(Guid session) {
+            using var db = new ApplicationContext();
+            var s = db.Sessions.Include(s=>s.User).FirstOrDefault(s => s.Token == session);
+            // var u = s.User;
+            var u = await db.Users.Where(u => u.Sessions.Any(t=>t.Id == s.Id)).FirstAsync();
+            if (u == null)
+                throw new Exception("Сессия не найдена");
+            return u;
         }
 
         public async Task<bool> IsValidTokenAsync(string token)

@@ -21,8 +21,8 @@ namespace GrandElementApi.Services
         {
             _connectionService = connectionService;
         }
-        public async Task<byte[]> ExcelGetRequestsAsync(DateTime dt) {
-            var requests = await AllRequestsAsync();
+        public async Task<byte[]> ExcelGetRequestsAsync(int managerId, DateTime dt) {
+            var requests = await AllRequestsAsync(managerId);
             byte[] result;
             var comlumHeadrs = new List<string> { "Дата", "Клиент", "Товар", "Поставщик",
                 "Контакты водителя", "Цена закупки", "Цена продажи", "Цена перевозки", "Еденица измерения" };
@@ -122,11 +122,12 @@ where id = (
             await db.SaveChangesAsync();
         }
         
-        public async Task<List<Request>> AllRequestsAsync()
+        public async Task<List<Request>> AllRequestsAsync(int managerId)
         {
             using var db = new ApplicationContext();
             return await db.Requests
-                .Where(x => x.RowStatus == Data.RowStatus.Active)
+                .Where(x => x.RowStatus == RowStatus.Active && x.ManagerId == managerId)
+                .Include(r=>r.Manager)
                 .Include(r=>r.Car)
                 .Include(r => r.CarCategory)
                 .Include(r=>r.Client)
@@ -136,11 +137,12 @@ where id = (
                 .OrderBy(r => r.Id)
                 .ToListAsync();
         }
-        public async Task<List<Request>> GetRequestsAsync(DateTime dt)
+        public async Task<List<Request>> GetRequestsAsync(int managerId, DateTime dt)
         {
             using var db = new ApplicationContext();
             return await db.Requests
-                .Where(x => x.RowStatus == Data.RowStatus.Active && x.DeliveryStart <= dt && dt <= x.DeliveryEnd )
+                .Where(x => x.RowStatus == RowStatus.Active && x.DeliveryStart <= dt && dt <= x.DeliveryEnd && x.ManagerId == managerId)
+                .Include(r => r.Manager)
                 .Include(r => r.Car)
                 .Include(r => r.CarCategory)
                 .Include(r => r.Client)
@@ -161,6 +163,7 @@ where id = (
             int? productId, int? supplierId, int? carId) {
             using var db = new ApplicationContext();
             var r = await db.Requests
+                .Include(r => r.Manager)
                 .Include(r => r.Car)
                 .Include(r => r.CarCategory)
                 .Include(r => r.Client)

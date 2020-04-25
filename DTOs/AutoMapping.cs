@@ -17,6 +17,8 @@ namespace GrandElementApi.DTOs
             CreateMap<ProductDTO, Product>().ForMember(x => x.Name, opt => opt.MapFrom(src => src.Name));
             CreateMap<ProductOnAddDTO, Product>().ForMember(x => x.Name, opt => opt.MapFrom(src => src.Name));
 
+            CreateMap<User, UserDTO>();
+
             CreateMap<Car, CarDTO>().ForMember(x => x.Vat, 
                 opt => opt.MapFrom((src, _)=> {
                     bool res;

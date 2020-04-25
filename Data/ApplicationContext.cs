@@ -16,6 +16,8 @@ namespace GrandElementApi.Data
         public virtual DbSet<SupplierProduct> SuppliersProducts { get; set; }
         public virtual DbSet<Client> Clients { get; set; }
         public virtual DbSet<Request> Requests { get; set; }
+        public virtual DbSet<User> Users{ get; set; }
+        public virtual DbSet<Session> Sessions { get; set; }
         public virtual DbSet<PartRequest> PartRequests { get; set; }
         public ApplicationContext()
         {
@@ -46,6 +48,8 @@ namespace GrandElementApi.Data
             OnSupplierProductCreating(modelBuilder);
             OnRequestCreating(modelBuilder);
             OnPartRequestCreating(modelBuilder);
+            OnUserCreating(modelBuilder);
+            OnSessionCreating(modelBuilder);
         }
         protected void OnCarModelCreating(ModelBuilder mb) {
 
@@ -397,6 +401,11 @@ namespace GrandElementApi.Data
                     .WithMany(p => p.Requests)
                     .HasForeignKey(d => d.SupplierId)
                     .HasConstraintName("requests_suppliers_id_fk");
+
+                entity.HasOne(d => d.Manager)
+                    .WithMany(m => m.Requests)
+                    .HasForeignKey(d => d.ManagerId)
+                    .HasConstraintName("requests_users_id_fk");
             });
 
         }
@@ -428,6 +437,60 @@ namespace GrandElementApi.Data
                     .WithMany()
                     .HasForeignKey(d => d.ParentRequestId)
                     .HasConstraintName("part_requests_requests_id_fk");
+            });
+        }
+        protected void OnUserCreating(ModelBuilder mb)
+        {
+            mb.Entity<User>(entity =>
+            {
+                entity.ToTable("users");
+
+                entity.HasComment("Пользователи");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.Login)
+                    .HasColumnName("login")
+                    .HasColumnType("character varying");
+
+                entity.Property(e => e.Pass)
+                    .HasColumnName("pass")
+                    .HasColumnType("character varying");
+
+                entity.Property(e => e.Name)
+                    .HasColumnName("name")
+                    .HasColumnType("character varying");
+            });
+        }
+        protected void OnSessionCreating(ModelBuilder mb)
+        {
+            mb.Entity<Session>(entity =>
+            {
+                entity.ToTable("sessions");
+
+                entity.HasComment("Сессии");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.Token)
+                    .HasColumnName("token")
+                    .HasColumnType("character varying");
+
+                entity.Property(e => e.LoginDate)
+                    .HasColumnName("login_date")
+                    .HasColumnType("timestamp without time zone");
+
+                entity.Property(e => e.LogoutDate)
+                    .HasColumnName("logout_date")
+                    .HasColumnType("timestamp without time zone");
+
+                entity.Property(e => e.UserId)
+                    .HasColumnName("user_id");
+
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.Sessions)
+                    .HasForeignKey(e=>e.UserId)
+                    .HasConstraintName("sessions_users_id_fk");
             });
         }
     }

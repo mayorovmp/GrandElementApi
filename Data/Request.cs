@@ -51,5 +51,6 @@ namespace GrandElementApi.Data
         public virtual Supplier Supplier { get; set; }
         public virtual CarCategory CarCategory { get; set; }
         public virtual ICollection<PartRequest> Parts { get; set; }
+        public virtual User Manager { get; set; }
     }
 }

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using GrandElementApi.Data;
 using GrandElementApi.DTOs;
+using GrandElementApi.Interfaces;
 using GrandElementApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,20 +19,23 @@ namespace GrandElementApi.Controllers
     {
         private readonly ILogger<RequestController> _logger;
         private readonly RequestService _requestService;
+        private readonly IUserService _userService;
         private readonly IMapper _mapper;
 
-        public RequestController(ILogger<RequestController> logger, RequestService requestService, IMapper mapper)
+        public RequestController(ILogger<RequestController> logger, RequestService requestService, IMapper mapper, IUserService userService)
         {
             _logger = logger;
             _requestService = requestService;
+            _userService = userService;
             _mapper = mapper;
         }
         [HttpGet]
-        public async Task<ActionResult<List<RequestDTO>>> Get()
+        public async Task<ActionResult<List<RequestDTO>>> Get([FromHeader]Guid authorization)
         {
             try
             {
-                var requests = await _requestService.AllRequestsAsync();
+                var user = await _userService.GetUserAsync(authorization);
+                var requests = await _requestService.AllRequestsAsync(user.Id);
                 return _mapper.Map<List<RequestDTO>>(requests);
             }
             catch (Exception e)
@@ -61,12 +65,13 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpGet("excel/{date}")]
-        public async Task<IActionResult> GetExcelByDate(DateTime date)
+        public async Task<IActionResult> GetExcelByDate(DateTime date, [FromHeader]Guid authorization)
         {
             var result = new byte[0];
             try
             {
-                result = await _requestService.ExcelGetRequestsAsync(date);
+                var user = await _userService.GetUserAsync(authorization);
+                result = await _requestService.ExcelGetRequestsAsync(user.Id, date);
             }
             catch (Exception e)
             {
@@ -76,11 +81,12 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpGet("{date}")]
-        public async Task<ActionResult<List<RequestDTO>>> GetByDate(DateTime date)
+        public async Task<ActionResult<List<RequestDTO>>> GetByDate(DateTime date, [FromHeader]Guid authorization)
         {
             try
             {
-                var requests = await _requestService.GetRequestsAsync(date);
+                var user = await _userService.GetUserAsync(authorization);
+                var requests = await _requestService.GetRequestsAsync(user.Id, date);
                 return _mapper.Map<List<RequestDTO>>(requests);
             }
             catch (Exception e)
@@ -91,11 +97,15 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<RequestDTO>> Add(RequestOnAddDTO r)
+        public async Task<ActionResult<RequestDTO>> Add(RequestOnAddDTO r, [FromHeader]Guid authorization)
         {
             try
             {
-                var res = await _requestService.Add(_mapper.Map<Request>(r));
+                var req = _mapper.Map<Request>(r);
+                var user = await _userService.GetUserAsync(authorization);
+                req.ManagerId = user.Id;
+
+                var res = await _requestService.Add(req);
                 return _mapper.Map<RequestDTO>(res);
             }
             catch (Exception e)
@@ -106,13 +116,17 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpPost("{parentId}")]
-        public async Task<ActionResult> AddPart(Request r, int parentId)
+        public async Task<ActionResult<RequestDTO>> AddPart(RequestOnAddDTO r, int parentId, [FromHeader]Guid authorization)
         {
             try
             {
-                r = await _requestService.Add(r);
-                await _requestService.LinkRequest(parentId, r.Id);
-                return Ok(r);
+                var req = _mapper.Map<Request>(r);
+                var user = await _userService.GetUserAsync(authorization);
+                req.ManagerId = user.Id;
+                var res = await _requestService.Add(req);
+
+                await _requestService.LinkRequest(parentId, res.Id);
+                return _mapper.Map<RequestDTO>(res);
             }
             catch (Exception e)
             {

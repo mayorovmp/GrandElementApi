@@ -36,6 +36,7 @@ namespace GrandElementApi.DTOs
         public virtual DeliveryAddressDTO DeliveryAddress { get; set; }
         public virtual ProductDTO Product { get; set; }
         public virtual SupplierDTO Supplier { get; set; }
+        public virtual UserDTO Manager { get; set; }
     }
     public class RequestOnAddDTO
     {

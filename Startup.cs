@@ -81,7 +81,8 @@ namespace GrandElementApi
             // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Grand Element API V1");
+                c.SwaggerEndpoint(env.IsDevelopment()? "/swagger/v1/swagger.json":"/api/swagger/v1/swagger.json", 
+                    "Grand Element API V1");
             });
             app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 

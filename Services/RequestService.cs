@@ -22,10 +22,12 @@ namespace GrandElementApi.Services
             _connectionService = connectionService;
         }
         public async Task<byte[]> ExcelGetRequestsAsync(int managerId, DateTime dt) {
-            var requests = await AllRequestsAsync(managerId);
+            var requests = await GetRequestsAsync(managerId, dt);
+            requests = requests.Where(r => r.IsLong == 0 && r.Status == RequestStatus.Completed).ToList();
             byte[] result;
-            var comlumHeadrs = new List<string> { "Дата", "Клиент", "Товар", "Поставщик",
-                "Контакты водителя", "Цена закупки", "Цена продажи", "Цена перевозки", "Еденица измерения" };
+            var comlumHeadrs = new List<string> { "Дата", "Клиент", "Адрес доставки", "Товар", "Поставщик",
+                "Машина", "Цена закупки", "Цена продажи", "Цена перевозки", "Еденица измерения", "Вход, тн", "Выход, тн", "Выручка", "Прибыль", "Стоимость перевозки", "Перевозчик", "Вознаграждение" };
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             using (var package = new ExcelPackage()) {
                 var worksheet = package.Workbook.Worksheets.Add(dt.ToString("dd.MM.yyyy")); //Worksheet name
                 using (var cells = worksheet.Cells[1, 1, 1, comlumHeadrs.Count]) //(1,1) (1,5)
@@ -45,13 +47,21 @@ namespace GrandElementApi.Services
                     var col = 1;
                     worksheet.Cells[row + 2, col++].Value = requests[row].DeliveryStart?.ToString("dd.MM.yyyy");
                     worksheet.Cells[row + 2, col++].Value = requests[row].Client?.Name;
+                    worksheet.Cells[row + 2, col++].Value = requests[row].DeliveryAddress?.Name;
                     worksheet.Cells[row + 2, col++].Value = requests[row].Product?.Name;
                     worksheet.Cells[row + 2, col++].Value = requests[row].Supplier?.Name;
-                    worksheet.Cells[row + 2, col++].Value = requests[row].Car?.Contacts;
+                    worksheet.Cells[row + 2, col++].Value = requests[row].CarCategory?.Name;
                     worksheet.Cells[row + 2, col++].Value = requests[row].PurchasePrice;
                     worksheet.Cells[row + 2, col++].Value = requests[row].SellingPrice;
                     worksheet.Cells[row + 2, col++].Value = requests[row].FreightPrice;
                     worksheet.Cells[row + 2, col++].Value = requests[row].Unit;
+                    worksheet.Cells[row + 2, col++].Value = requests[row].AmountIn;
+                    worksheet.Cells[row + 2, col++].Value = requests[row].AmountOut;
+                    worksheet.Cells[row + 2, col++].Value = requests[row].SellingCost;
+                    worksheet.Cells[row + 2, col++].Value = requests[row].Profit;
+                    worksheet.Cells[row + 2, col++].Value = requests[row].FreightCost;
+                    worksheet.Cells[row + 2, col++].Value = requests[row].Car?.Owner;
+                    worksheet.Cells[row + 2, col++].Value = requests[row].Reward;
                 }
 
                 result = package.GetAsByteArray();

@@ -77,7 +77,8 @@ namespace GrandElementApi.Controllers
             {
                 _logger.LogError(e.ToString());
             }
-            return File(result, "application/ms-excel", $"Employee.xlsx");
+
+            return File(result, "application/ms-excel", $"заявки.xlsx");
         }
 
         [HttpGet("{date}")]

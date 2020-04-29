@@ -88,7 +88,7 @@ namespace GrandElementApi.Services
             if (part != null)
             {
                 var root = await db.Requests.FindAsync(part.ParentRequestId);
-                root.AmountComplete += r.AmountOut;
+                root.AmountComplete += r.AmountOut.Value;
             }
             await db.SaveChangesAsync();
             return r;
@@ -135,48 +135,91 @@ where id = (
         public async Task<List<Request>> AllRequestsAsync(int managerId)
         {
             using var db = new ApplicationContext();
-            return await db.Requests
+            var res = await db.Requests
                 .Where(x => x.RowStatus == RowStatus.Active && x.ManagerId == managerId)
                 .Include(r=>r.Manager)
                 .Include(r=>r.Car)
                 .Include(r => r.CarCategory)
                 .Include(r=>r.Client)
+                    .ThenInclude(c => c.Addresses)
                 .Include(r => r.DeliveryAddress)
                 .Include(r => r.Supplier)
                 .Include(r => r.Product)
                 .OrderBy(r => r.Id)
                 .ToListAsync();
+
+            res.ForEach(r => {
+                if (r.Client != null)
+                {
+                    r.Client.Addresses = r.Client.Addresses.Where(a => a.RowStatus == RowStatus.Active).ToList();
+                }
+            });
+            return res;
         }
         public async Task<List<Request>> GetRequestsAsync(int managerId, DateTime dt)
         {
             using var db = new ApplicationContext();
-            return await db.Requests
+            var res = await db.Requests
                 .Where(x => x.RowStatus == RowStatus.Active && x.DeliveryStart <= dt && dt <= x.DeliveryEnd && x.ManagerId == managerId)
                 .Include(r => r.Manager)
                 .Include(r => r.Car)
                 .Include(r => r.CarCategory)
                 .Include(r => r.Client)
+                    .ThenInclude(c=>c.Addresses)
                 .Include(r => r.DeliveryAddress)
                 .Include(r => r.Supplier)
                 .Include(r => r.Product)
                 .OrderBy(r => r.Id)
                 .ToListAsync();
+            res.ForEach( r=> {
+                if (r.Client != null)
+                {
+                    r.Client.Addresses = r.Client.Addresses.Where(a => a.RowStatus == RowStatus.Active).ToList();
+                }
+            });
+            return res;
         }
         public async Task EditAsync(Request item)
         {
             using var db = new ApplicationContext();
-            db.Entry(await db.Requests.FirstOrDefaultAsync(x => x.Id == item.Id)).CurrentValues.SetValues(item);
-            await db.SaveChangesAsync();
+            var r = await db.Requests.FirstOrDefaultAsync(x => x.Id == item.Id);
+            if (r == null)
+                throw new Exception("Заявка не найдена");
+            r.ProductId = item.ProductId;
+            r.DeliveryStart = item.DeliveryStart;
+            r.DeliveryAddressId = item.DeliveryAddressId;
+            r.Comment = item.Comment;
+            r.SupplierId = item.SupplierId;
+            r.AmountIn = item.AmountIn;
+            r.AmountOut = item.AmountOut;
+            r.Amount = item.Amount;
+            r.DeliveryEnd = item.DeliveryEnd;
+            r.IsLong = item.IsLong;
+            r.PurchasePrice = item.PurchasePrice;
+            r.SellingPrice = item.SellingPrice;
+            r.FreightPrice = item.FreightPrice;
+            r.Unit = item.Unit;
+            r.FreightCost = item.FreightCost;
+            r.Profit = item.Profit;
+            r.ClientId = item.ClientId;
+            r.CarCategoryId = item.CarCategoryId;
+            r.Reward = item.Reward;
+            r.SellingCost = item.SellingCost;
+            r.CarId = item.CarId;
+            r.CarVat = item.CarVat;
+            r.SupplierVat = item.SupplierVat;
 
+            await db.SaveChangesAsync();
         }
         public async Task<Request> GetLastRequest(int? clientId, int? addressId, 
             int? productId, int? supplierId, int? carId) {
             using var db = new ApplicationContext();
-            var r = await db.Requests
+            var res = await db.Requests
                 .Include(r => r.Manager)
                 .Include(r => r.Car)
                 .Include(r => r.CarCategory)
                 .Include(r => r.Client)
+                    .ThenInclude(c => c.Addresses)
                 .Include(r => r.DeliveryAddress)
                 .Include(r => r.Supplier)
                 .Include(r => r.Product)
@@ -189,7 +232,9 @@ where id = (
                 && (carId == null || x.CarId == carId)
                 && x.RowStatus == RowStatus.Active)
                 .OrderByDescending(x=>x.Id).FirstOrDefaultAsync();
-            return r;
+
+            res.Client.Addresses = res.Client.Addresses.Where(a => a.RowStatus == RowStatus.Active).ToList();
+            return res;
         }
     }
 }

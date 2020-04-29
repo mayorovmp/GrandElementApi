@@ -28,7 +28,7 @@ namespace GrandElementApi.DTOs
         public decimal? SellingCost { get; set; }
         public bool? CarVat { get; set; }
         public bool? SupplierVat { get; set; }
-        public int? AmountComplete { get; set; }
+        public decimal AmountComplete { get; set; }
 
         public virtual CarDTO Car { get; set; }
         public virtual CarCategoryDTO CarCategory { get; set; }
@@ -40,9 +40,7 @@ namespace GrandElementApi.DTOs
     }
     public class RequestOnAddDTO
     {
-        public int StatusId { get; set; }
         public string Comment { get; set; }
-        public decimal? AmountOut { get; set; }
         public DateTime? DeliveryStart { get; set; }
         public DateTime? DeliveryEnd { get; set; }
         public bool IsLong { get; set; }
@@ -59,18 +57,17 @@ namespace GrandElementApi.DTOs
         public int? ProductId { get; set; }
         public int? SupplierId { get; set; }
         public decimal? AmountIn { get; set; }
+        public decimal? AmountOut { get; set; }
         public decimal? Amount { get; set; }
         public decimal? Reward { get; set; }
         public decimal? SellingCost { get; set; }
         public bool? CarVat { get; set; }
         public bool? SupplierVat { get; set; }
-        public decimal? AmountComplete { get; set; }
 
     }
     public class RequestOnEditDTO
     {
         public int Id { get; set; }
-        public int StatusId { get; set; }
         public string Comment { get; set; }
         public decimal? AmountOut { get; set; }
         public DateTime? DeliveryStart { get; set; }
@@ -94,7 +91,6 @@ namespace GrandElementApi.DTOs
         public decimal? SellingCost { get; set; }
         public bool? CarVat { get; set; }
         public bool? SupplierVat { get; set; }
-        public decimal? AmountComplete { get; set; }
 
     }
 }

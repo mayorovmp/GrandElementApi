@@ -133,6 +133,12 @@ namespace GrandElementApi.DTOs
                     )
                 )
                 .ForMember(
+                    dest => dest.AmountComplete,
+                    opt => opt.MapFrom(
+                        (src, _) => { return 0; }
+                    )
+                )
+                .ForMember(
                     dest => dest.Client,
                     opt => opt.MapFrom(
                         (src, _) => { Client c = null; return c; }
@@ -172,9 +178,9 @@ namespace GrandElementApi.DTOs
                 .ForMember(
                     dest=>dest.Status, 
                     opt=>opt.MapFrom(
-                        src=>src.StatusId
+                        src=>RequestStatus.Active
                     )
-            )
+                 )
                 .ForMember(d => d.CarVat, opt => opt.MapFrom(
                       (src, _) =>
                       {
@@ -261,20 +267,9 @@ namespace GrandElementApi.DTOs
                 .ForMember(
                     dest => dest.Status,
                     opt => opt.MapFrom(
-                        src => src.StatusId
+                        src => RequestStatus.Active
                     )
                 )
-                .ForMember(d => d.CarVat, opt => opt.MapFrom(
-                      (src, _) =>
-                      {
-                          int? res;
-                          if (!src.CarVat.HasValue)
-                              res = null;
-                          else
-                              res = src.CarVat.Value ? 1 : 0;
-                          return res;
-                      }
-                 ))
                 .ForMember(d => d.CarVat, opt => opt.MapFrom(
                       (src, _) =>
                       {

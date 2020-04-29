@@ -42,7 +42,7 @@ namespace GrandElementApi.Data
         public int? CarId { get; set; }
         public int? CarVat { get; set; }
         public int? SupplierVat { get; set; }
-        public decimal? AmountComplete { get; set; }
+        public decimal AmountComplete { get; set; }
 
         public virtual Car Car { get; set; }
         public virtual Client Client { get; set; }

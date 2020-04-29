@@ -8,11 +8,7 @@ namespace GrandElementApi.DTOs
     {
         public AutoMapping()
         {
-            CreateMap<CarCategoryDTO, CarCategory>().ForMember(x=>x.Name, opt=>opt.MapFrom(src => src.Name)); 
-            CreateMap<CarCategory, CarCategoryDTO>().ForMember(x => x.Name, opt => opt.MapFrom(src => src.Name));
-
-            CreateMap<CarCategoryOnAddDTO, CarCategory>().ForMember(x => x.Name, opt => opt.MapFrom(src => src.Name));
-
+            CreateMapForCarCategory();
             CreateMap<Product, ProductDTO>().ForMember(x=>x.Name, opt=>opt.MapFrom(src=>src.Name));
             CreateMap<ProductDTO, Product>().ForMember(x => x.Name, opt => opt.MapFrom(src => src.Name));
             CreateMap<ProductOnAddDTO, Product>().ForMember(x => x.Name, opt => opt.MapFrom(src => src.Name));
@@ -291,9 +287,14 @@ namespace GrandElementApi.DTOs
                               res = src.SupplierVat.Value ? 1 : 0;
                           return res;
                       }
-                  )); 
+                  ));
+        }
+        private void CreateMapForCarCategory() {
 
+            CreateMap<CarCategoryDTO, CarCategory>().ForMember(x => x.Name, opt => opt.MapFrom(src => src.Name));
+            CreateMap<CarCategory, CarCategoryDTO>().ForMember(x => x.Name, opt => opt.MapFrom(src => src.Name));
 
+            CreateMap<CarCategoryOnAddDTO, CarCategory>().ForMember(x => x.Name, opt => opt.MapFrom(src => src.Name));
         }
     }
 }

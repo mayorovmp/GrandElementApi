@@ -9,29 +9,13 @@ namespace GrandElementApi.DTOs
         public AutoMapping()
         {
             CreateMapForCarCategory();
+            CreateMapForCar(); 
             CreateMap<Product, ProductDTO>().ForMember(x=>x.Name, opt=>opt.MapFrom(src=>src.Name));
             CreateMap<ProductDTO, Product>().ForMember(x => x.Name, opt => opt.MapFrom(src => src.Name));
             CreateMap<ProductOnAddDTO, Product>().ForMember(x => x.Name, opt => opt.MapFrom(src => src.Name));
 
             CreateMap<User, UserDTO>();
 
-            CreateMap<Car, CarDTO>().ForMember(x => x.Vat, 
-                opt => opt.MapFrom((src, _)=> {
-                    bool res;
-                    if (src.Vat.HasValue)
-                        res = src.Vat.Value == 1;
-                    else
-                        res = false;
-                    return res;}));
-
-            CreateMap<CarOnAddDTO, Car>().ForMember(x => x.Vat,
-                opt => opt.MapFrom((src, _) => {
-                    return src.Vat ? 1 : 0; ;
-                }));
-            CreateMap<CarDTO, Car>().ForMember(x => x.Vat,
-                opt => opt.MapFrom((src, _) => {
-                    return src.Vat ? 1 : 0;
-                }));
 
             CreateMap<DeliveryAddress, DeliveryAddressDTO>().ForMember(dest=>dest.Contacts, opt=>opt.MapFrom(src=>src.Contacts));
             CreateMap<DeliveryAddressOnAddDTO, DeliveryAddress>();
@@ -295,6 +279,27 @@ namespace GrandElementApi.DTOs
             CreateMap<CarCategory, CarCategoryDTO>().ForMember(x => x.Name, opt => opt.MapFrom(src => src.Name));
 
             CreateMap<CarCategoryOnAddDTO, CarCategory>().ForMember(x => x.Name, opt => opt.MapFrom(src => src.Name));
+        }
+        private void CreateMapForCar()
+        {
+            CreateMap<Car, CarDTO>().ForMember(x => x.Vat,
+                opt => opt.MapFrom((src, _) => {
+                    bool res;
+                    if (src.Vat.HasValue)
+                        res = src.Vat.Value == 1;
+                    else
+                        res = false;
+                    return res;
+                }));
+            CreateMap<CarOnAddDTO, Car>().ForMember(x => x.Vat,
+                opt => opt.MapFrom((src, _) => {
+                    return src.Vat ? 1 : 0; ;
+                }));
+            CreateMap<CarDTO, Car>().ForMember(x => x.Vat,
+                opt => opt.MapFrom((src, _) => {
+                    return src.Vat ? 1 : 0;
+                }));
+
         }
     }
 }

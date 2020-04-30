@@ -172,17 +172,6 @@ namespace GrandElementApi.DTOs
                           return res;
                       }
                   ))
-                .ForMember(d => d.CarVat, opt => opt.MapFrom(
-                      (src, _) =>
-                      {
-                          int? res;
-                          if (!src.CarVat.HasValue)
-                              res = null;
-                          else
-                            res = src.CarVat.Value ? 1 : 0;
-                          return res;
-                      }
-                  ))
                 .ForMember(d => d.SupplierVat, opt => opt.MapFrom(
                       (src, _) =>
                       {

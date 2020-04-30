@@ -76,13 +76,29 @@ namespace GrandElementApi
         {
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
-            app.UseSwagger();
+            app.UseSwagger(c=>
+            {
+                if (!env.IsDevelopment())
+                {
+                    c.PreSerializeFilters.Add((swagger, httpReq) =>
+                    {
+                        swagger.Servers = new List<OpenApiServer> { new OpenApiServer { Url = $"https://{httpReq.Host.Value}/api" } };
+                    });
+                }
+            });
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint(env.IsDevelopment()? "/swagger/v1/swagger.json":"/api/swagger/v1/swagger.json", 
-                    "Grand Element API V1");
+                if (env.IsDevelopment())
+                {
+                    c.SwaggerEndpoint( "/swagger/v1/swagger.json", "Grand Element API V1");
+                }
+                else
+                {
+                    c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Grand Element API V1");
+                    // c.RoutePrefix = "api/swagger";
+                }
             });
             app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 

@@ -137,12 +137,12 @@ namespace GrandElementApi.Controllers
         }
 
         [HttpPost("complete/{id}")]
-        public async Task<ActionResult> Complete(int id)
+        public async Task<ActionResult<RequestDTO>> Complete(int id)
         {
             try
             {
                 var res = await _requestService.Complete(id);
-                return Ok(res);
+                return _mapper.Map<RequestDTO>(res);
             }
             catch (Exception e)
             {

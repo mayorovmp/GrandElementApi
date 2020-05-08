@@ -82,6 +82,8 @@ namespace GrandElementApi.Services
             var r = await db.Requests.FindAsync(id);
             if (r.AmountOut == null)
                 throw new Exception("Не установлен объем на выходе.");
+            if (r.Status == RequestStatus.Completed)
+                throw new Exception("Заявка уже закрыта.");
             r.Status = RequestStatus.Completed;
 
             var part = db.PartRequests.FirstOrDefault(x=>x.ChildRequestId == id);
@@ -131,7 +133,6 @@ where id = (
             db.Add(p);
             await db.SaveChangesAsync();
         }
-        
         public async Task<List<Request>> AllRequestsAsync(int managerId)
         {
             using var db = new ApplicationContext();
@@ -232,8 +233,10 @@ where id = (
                 && (carId == null || x.CarId == carId)
                 && x.RowStatus == RowStatus.Active)
                 .OrderByDescending(x=>x.Id).FirstOrDefaultAsync();
-
-            res.Client.Addresses = res.Client.Addresses.Where(a => a.RowStatus == RowStatus.Active).ToList();
+            if (res == null)
+                return null;
+            if(res.Client != null)
+                res.Client.Addresses = res.Client.Addresses.Where(a => a.RowStatus == RowStatus.Active).ToList();
             return res;
         }
     }

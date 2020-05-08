@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using GrandElementApi.Data;
-using System.Collections.Generic;
 
 namespace GrandElementApi.DTOs
 {

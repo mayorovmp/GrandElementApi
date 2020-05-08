@@ -45,7 +45,6 @@ namespace GrandElementApi.Controllers
         {
             try
             {
-
                 var newProduct = await _productService.AddProductAsync(_mapper.Map<Product>(product));
                 return _mapper.Map<ProductDTO>(newProduct);
             }

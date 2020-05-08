@@ -43,7 +43,6 @@ namespace GrandElementApi.Data
         public int? CarVat { get; set; }
         public int? SupplierVat { get; set; }
         public decimal AmountComplete { get; set; }
-
         public virtual Car Car { get; set; }
         public virtual Client Client { get; set; }
         public virtual DeliveryAddress DeliveryAddress { get; set; }

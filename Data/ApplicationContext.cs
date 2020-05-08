@@ -23,19 +23,16 @@ namespace GrandElementApi.Data
         {
             //Database.EnsureCreated();
         }
-
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
             : base(options)
         {
         }
-
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var conn = Environment.GetEnvironmentVariable("CONNECTION_STRING");
             optionsBuilder.UseLoggerFactory(_consoleLoggerFactory);
             optionsBuilder.UseNpgsql(conn);
         }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             OnCarCategoryModelCreating(modelBuilder);

@@ -145,6 +145,7 @@ where id = (
                     .ThenInclude(c => c.Addresses)
                 .Include(r => r.DeliveryAddress)
                 .Include(r => r.Supplier)
+                    .ThenInclude(s => s.Products)
                 .Include(r => r.Product)
                 .OrderBy(r => r.Id)
                 .ToListAsync();
@@ -169,6 +170,7 @@ where id = (
                     .ThenInclude(c=>c.Addresses)
                 .Include(r => r.DeliveryAddress)
                 .Include(r => r.Supplier)
+                    .ThenInclude(s => s.Products)
                 .Include(r => r.Product)
                 .OrderBy(r => r.Id)
                 .ToListAsync();
@@ -223,6 +225,7 @@ where id = (
                     .ThenInclude(c => c.Addresses)
                 .Include(r => r.DeliveryAddress)
                 .Include(r => r.Supplier)
+                    .ThenInclude(s => s.Products)
                 .Include(r => r.Product)
                 .OrderBy(r => r.Id)
                 .Where(x=>

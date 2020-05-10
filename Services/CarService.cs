@@ -58,8 +58,6 @@ namespace GrandElementApi.Services
             }
             return car;
         }
-
-
         public async Task<List<Car>> AllCarsAsync()
         {
             using (var db = new ApplicationContext()) {

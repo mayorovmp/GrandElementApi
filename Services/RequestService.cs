@@ -80,6 +80,14 @@ namespace GrandElementApi.Services
         public async Task<Request> Complete(int id) {
             using var db = new ApplicationContext();
             var r = await db.Requests.FindAsync(id);
+
+            if (r.IsLong == 1)
+            {
+                r.Status = RequestStatus.Completed;
+                await db.SaveChangesAsync();
+                return r;
+            }
+
             if (r.AmountOut == null)
                 throw new Exception("Не установлен объем на выходе.");
             if (r.Status == RequestStatus.Completed)

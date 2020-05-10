@@ -69,6 +69,7 @@ namespace GrandElementApi.Controllers
                 return Problem(e.Message);
             }
         }
+
         [HttpPut]
         public async Task<ActionResult<SupplierDTO>> Edit(SupplierOnEditDTO supplier)
         {

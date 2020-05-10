@@ -80,7 +80,7 @@ namespace GrandElementApi.Services
         public async Task<List<Supplier>> SuppliersByProductIdAsync(int productId)
         {
             using var db = new ApplicationContext();
-            return await db.Suppliers.Where(x => x.RowStatus == RowStatus.Active && x.Products.Any(p => p.ProductId == productId))
+            return await db.Suppliers.Where(x => x.RowStatus == RowStatus.Active && x.Products.Any(p => p.ProductId == productId && p.RowStatus == RowStatus.Active))
                 .Include(x => x.Products)
                     .ThenInclude(p => p.Product)
                 .Select(x => new Supplier()

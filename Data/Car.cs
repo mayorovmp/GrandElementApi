@@ -13,7 +13,7 @@ namespace GrandElementApi.Data
         public string Contacts { get; set; }
         public string Comments { get; set; }
         public int? CarCategoryId { get; set; }
-        public decimal? FreightPrice { get; set; }
+        // public decimal? FreightPrice { get; set; }
         public string Unit { get; set; }
         public int? Vat { get; set; }
 

@@ -29,6 +29,7 @@ namespace GrandElementApi.Data
         public decimal? PurchasePrice { get; set; }
         public decimal? SellingPrice { get; set; }
         public decimal? FreightPrice { get; set; }
+        public decimal? Income { get; set; }
         public string Unit { get; set; }
         public decimal? FreightCost { get; set; }
         public decimal? Profit { get; set; }

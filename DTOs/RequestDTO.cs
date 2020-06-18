@@ -26,6 +26,7 @@ namespace GrandElementApi.DTOs
         public decimal? Amount { get; set; }
         public decimal? Reward { get; set; }
         public decimal? SellingCost { get; set; }
+        public decimal? Income { get; set; }
         public bool? CarVat { get; set; }
         public bool? SupplierVat { get; set; }
         public decimal AmountComplete { get; set; }
@@ -49,6 +50,7 @@ namespace GrandElementApi.DTOs
         public decimal? FreightPrice { get; set; }
         public string Unit { get; set; }
         public decimal? FreightCost { get; set; }
+        public decimal? Income { get; set; }
         public decimal? Profit { get; set; }
         public int? ClientId { get; set; }
         public int? CarCategoryId { get; set; }
@@ -74,6 +76,7 @@ namespace GrandElementApi.DTOs
         public DateTime? DeliveryEnd { get; set; }
         public bool IsLong { get; set; }
         public decimal? PurchasePrice { get; set; }
+        public decimal? Income { get; set; }
         public decimal? SellingPrice { get; set; }
         public decimal? FreightPrice { get; set; }
         public string Unit { get; set; }

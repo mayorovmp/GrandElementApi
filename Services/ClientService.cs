@@ -85,6 +85,7 @@ namespace GrandElementApi.Services
                         Updated = x.Updated,
                         Addresses = x.Addresses.Where(da=>da.RowStatus == RowStatus.Active)
                         .Select(y=>new DeliveryAddress() { 
+                            FreightPrice = y.FreightPrice,
                             Client = y.Client,
                             ClientId = y.ClientId,
                             Created = y.Created,

@@ -53,7 +53,6 @@ namespace GrandElementApi.Services
                 storedCar.Contacts = car.Contacts;
                 storedCar.CarCategoryId = car.CarCategoryId;
                 storedCar.CarCategory = car.CarCategory;
-                storedCar.FreightPrice = car.FreightPrice;
                 await db.SaveChangesAsync();
             }
             return car;

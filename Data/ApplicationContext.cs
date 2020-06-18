@@ -32,6 +32,7 @@ namespace GrandElementApi.Data
             var conn = Environment.GetEnvironmentVariable("CONNECTION_STRING");
             optionsBuilder.UseLoggerFactory(_consoleLoggerFactory);
             optionsBuilder.UseNpgsql(conn);
+            optionsBuilder.EnableSensitiveDataLogging();
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -75,10 +76,6 @@ namespace GrandElementApi.Data
                 entity.Property(e => e.Created)
                     .HasColumnName("created")
                     .HasDefaultValueSql("now()");
-
-                entity.Property(e => e.FreightPrice)
-                    .HasColumnName("freight_price")
-                    .HasColumnType("numeric");
 
                 entity.Property(e => e.Owner)
                     .HasColumnName("owner")
@@ -163,6 +160,10 @@ namespace GrandElementApi.Data
                 entity.Property(e => e.Id).HasColumnName("id");
 
                 entity.Property(e => e.ClientId).HasColumnName("client_id");
+
+                entity.Property(e => e.FreightPrice)
+                    .HasColumnName("freight_price")
+                    .HasColumnType("numeric");
 
                 entity.Property(e => e.Name)
                     .HasColumnName("name")
@@ -335,6 +336,11 @@ namespace GrandElementApi.Data
                     .HasColumnName("freight_price")
                     .HasColumnType("numeric")
                     .HasComment("Цена перевозки за еденицу(час, объем и тд). ");
+
+                entity.Property(e => e.Income)
+                    .HasColumnName("income")
+                    .HasColumnType("numeric")
+                    .HasComment("Доход");
 
                 entity.Property(e => e.IsLong)
                     .HasColumnName("is_long")

@@ -12,7 +12,7 @@ namespace GrandElementApi.DTOs
         public string Owner { get; set; }
         public string Contacts { get; set; }
         public string Comments { get; set; }
-        public decimal? FreightPrice { get; set; }
+        //public decimal? FreightPrice { get; set; }
         public string Unit { get; set; }
         public bool Vat { get; set; }
 
@@ -24,7 +24,7 @@ namespace GrandElementApi.DTOs
         public string Owner { get; set; }
         public string Contacts { get; set; }
         public string Comments { get; set; }
-        public decimal? FreightPrice { get; set; }
+        //public decimal? FreightPrice { get; set; }
         public string Unit { get; set; }
         public bool Vat { get; set; }
 

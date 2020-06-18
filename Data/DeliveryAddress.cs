@@ -16,7 +16,7 @@ namespace GrandElementApi.Data
         public int Id { get; set; }
         public string Name { get; set; }
         public int? ClientId { get; set; }
-
+        public decimal? FreightPrice { get; set; }
         public virtual Client Client { get; set; }
         public virtual ICollection<DeliveryContact> Contacts { get; set; }
         public virtual ICollection<Request> Requests { get; set; }

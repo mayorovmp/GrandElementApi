@@ -39,6 +39,20 @@ namespace GrandElementApi.Controllers
                 return Problem(e.Message);
             }
         }
+        [HttpGet("search")]
+        public async Task<ActionResult<List<ClientDTO>>> Get(string name)
+        {
+            try
+            {
+                var res = await _clientService.SearchClientsAsync(name);
+                return _mapper.Map<List<ClientDTO>>(res);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return Problem(e.Message);
+            }
+        }
         [HttpPut]
         public async Task<ActionResult<ClientDTO>> Edit(ClientOnEditDTO client)
         {

@@ -101,5 +101,39 @@ namespace GrandElementApi.Services
                 return res;
             }
         }
+        public async Task<List<Client>> SearchClientsAsync(string val)
+        {
+            using (var db = new ApplicationContext())
+            {
+                db.SaveChanges();
+                var res = await db.Clients.Where(x => x.RowStatus == RowStatus.Active && x.Name.ToLower().Contains(val.ToLower()))
+                    .Include(c => c.Addresses)
+                    .ThenInclude(x => x.Contacts)
+                    .Select(x => new Client()
+                    {
+                        Id = x.Id,
+                        RowStatus = x.RowStatus,
+                        Created = x.Created,
+                        Name = x.Name,
+                        Updated = x.Updated,
+                        Addresses = x.Addresses.Where(da => da.RowStatus == RowStatus.Active)
+                        .Select(y => new DeliveryAddress()
+                        {
+                            FreightPrice = y.FreightPrice,
+                            Client = y.Client,
+                            ClientId = y.ClientId,
+                            Created = y.Created,
+                            Id = y.Id,
+                            RowStatus = y.RowStatus,
+                            Name = y.Name,
+                            Updated = y.Updated,
+                            Contacts = y.Contacts.Where(dc => dc.RowStatus == RowStatus.Active).ToList()
+                        }).ToList()
+                    }
+                    )
+                    .ToListAsync();
+                return res;
+            }
+        }
     }
 }

@@ -40,11 +40,11 @@ namespace GrandElementApi.Controllers
             }
         }
         [HttpGet("search")]
-        public async Task<ActionResult<List<ClientDTO>>> Get(string name)
+        public async Task<ActionResult<List<ClientDTO>>> Get(string name, int limit)
         {
             try
             {
-                var res = await _clientService.SearchClientsAsync(name);
+                var res = await _clientService.SearchClientsAsync(name, limit);
                 return _mapper.Map<List<ClientDTO>>(res);
             }
             catch (Exception e)

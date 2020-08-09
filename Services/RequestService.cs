@@ -23,7 +23,7 @@ namespace GrandElementApi.Services
         }
         public async Task<byte[]> ExcelGetRequestsAsync(int managerId, DateTime dt) {
             var requests = await GetRequestsAsync(managerId, dt);
-            requests = requests.Where(r => r.IsLong == 0 && r.Status == RequestStatus.Completed).ToList();
+            requests = requests.Where(r => r.IsLong == 0 && r.RequestStatusId == 1).ToList();
             byte[] result;
             var comlumHeadrs = new List<string> { "Дата", "Клиент", "Адрес доставки", "Товар", "Поставщик",
                 "Машина", "Цена закупки", "Цена продажи", "Цена перевозки", "Еденица измерения", "Вход, тн", "Выход, тн", "Выручка", "Доход", "Прибыль", "Стоимость перевозки", "Перевозчик", "Вознаграждение" };
@@ -84,16 +84,16 @@ namespace GrandElementApi.Services
 
             if (r.IsLong == 1)
             {
-                r.Status = RequestStatus.Completed;
+                r.RequestStatusId = RequestStatus.COMPLETED;
                 await db.SaveChangesAsync();
                 return r;
             }
 
             if (r.AmountOut == null)
                 throw new Exception("Не установлен объем на выходе.");
-            if (r.Status == RequestStatus.Completed)
+            if (r.RequestStatusId == RequestStatus.COMPLETED)
                 throw new Exception("Заявка уже закрыта.");
-            r.Status = RequestStatus.Completed;
+            r.RequestStatusId = RequestStatus.COMPLETED;
 
             var part = db.PartRequests.FirstOrDefault(x=>x.ChildRequestId == id);
             if (part != null)
@@ -142,14 +142,19 @@ where id = (
             db.Add(p);
             await db.SaveChangesAsync();
         }
-        public async Task<List<Request>> AllRequestsAsync(int managerId)
+        public async Task<List<Request>> GetNotCompletedRequestsAsync(int managerId, int limit, int offset)
         {
             using var db = new ApplicationContext();
             var res = await db.Requests
-                .Where(x => x.RowStatus == RowStatus.Active && x.ManagerId == managerId)
+                .Where(x => x.RowStatus == RowStatus.Active
+                    && x.RequestStatus.Id != RequestStatus.COMPLETED
+                    && (x.ManagerId == managerId))
+                .Skip(offset)
+                .Take(limit)
                 .Include(r=>r.Manager)
                 .Include(r=>r.Car)
                 .Include(r => r.CarCategory)
+                .Include(r => r.RequestStatus)
                 .Include(r=>r.Client)
                     .ThenInclude(c => c.Addresses)
                 .Include(r => r.DeliveryAddress)
@@ -157,6 +162,36 @@ where id = (
                     .ThenInclude(s => s.Products)
                 .Include(r => r.Product)
                 .OrderBy(r => r.Id)
+                .ToListAsync();
+
+            res.ForEach(r => {
+                if (r.Client != null)
+                {
+                    r.Client.Addresses = r.Client.Addresses.Where(a => a.RowStatus == RowStatus.Active).ToList();
+                }
+            });
+            return res;
+        }
+        public async Task<List<Request>> GetCompletedRequestsAsync(int? managerId, int limit = 400, int offset = 0)
+        {
+            using var db = new ApplicationContext();
+            var res = await db.Requests
+                .Where(x => x.RowStatus == RowStatus.Active
+                    && x.RequestStatus.Id == RequestStatus.COMPLETED
+                    && (managerId.HasValue && x.ManagerId == managerId))
+                .Skip(offset)
+                .Take(limit)
+                .Include(r => r.Manager)
+                .Include(r => r.Car)
+                .Include(r => r.CarCategory)
+                .Include(r => r.RequestStatus)
+                .Include(r => r.Client)
+                    .ThenInclude(c => c.Addresses)
+                .Include(r => r.DeliveryAddress)
+                .Include(r => r.Supplier)
+                    .ThenInclude(s => s.Products)
+                .Include(r => r.Product)
+                .OrderByDescending(r => r.Id)
                 .ToListAsync();
 
             res.ForEach(r => {
@@ -181,6 +216,7 @@ where id = (
                 .Include(r => r.Supplier)
                     .ThenInclude(s => s.Products)
                 .Include(r => r.Product)
+                .Include(r => r.RequestStatus)
                 .OrderBy(r => r.Id)
                 .ToListAsync();
             res.ForEach( r=> {

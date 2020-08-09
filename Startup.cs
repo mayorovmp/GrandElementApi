@@ -44,6 +44,7 @@ namespace GrandElementApi
             services.AddSingleton<ClientService, ClientService>();
             services.AddSingleton<CarService, CarService>();
             services.AddSingleton<RequestService, RequestService>();
+            services.AddSingleton<RequestStatusService, RequestStatusService>();
             services.AddSingleton<IConnectionService, ConnectionService>();
             services.AddControllers();
             services.AddSwaggerGen(c =>

@@ -9,6 +9,7 @@ using GrandElementApi.Interfaces;
 using GrandElementApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 
 namespace GrandElementApi.Controllers
@@ -29,13 +30,34 @@ namespace GrandElementApi.Controllers
             _userService = userService;
             _mapper = mapper;
         }
-        [HttpGet]
-        public async Task<ActionResult<List<RequestDTO>>> Get([FromHeader]Guid authorization)
+        [HttpGet("not_completed")]
+        public async Task<ActionResult<List<RequestDTO>>> GetNotCompleted(
+            [FromHeader] Guid authorization,
+            [FromQuery(Name = "limit")][BindRequired] int limit,
+            [FromQuery(Name = "offset")][BindRequired] int offset)
         {
             try
             {
                 var user = await _userService.GetUserAsync(authorization);
-                var requests = await _requestService.AllRequestsAsync(user.Id);
+                var requests = await _requestService.GetNotCompletedRequestsAsync(user.Id, limit, offset);
+                return _mapper.Map<List<RequestDTO>>(requests);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return Problem(e.Message);
+            }
+        }
+        [HttpGet("completed")]
+        public async Task<ActionResult<List<RequestDTO>>> GetCompleted(
+            [FromHeader] Guid authorization,
+            [FromQuery(Name = "limit")][BindRequired] int limit, 
+            [FromQuery(Name = "offset")][BindRequired] int offset)
+        {
+            try
+            {
+                var user = await _userService.GetUserAsync(authorization);
+                var requests = await _requestService.GetCompletedRequestsAsync(user.Id, limit, offset);
                 return _mapper.Map<List<RequestDTO>>(requests);
             }
             catch (Exception e)
@@ -60,6 +82,7 @@ namespace GrandElementApi.Controllers
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
+                return Problem(e.Message);
                 return Problem(e.Message);
             }
         }
@@ -107,26 +130,6 @@ namespace GrandElementApi.Controllers
                 req.ManagerId = user.Id;
 
                 var res = await _requestService.Add(req);
-                return _mapper.Map<RequestDTO>(res);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return Problem(e.Message);
-            }
-        }
-
-        [HttpPost("{parentId}")]
-        public async Task<ActionResult<RequestDTO>> AddPart(RequestOnAddDTO r, int parentId, [FromHeader]Guid authorization)
-        {
-            try
-            {
-                var req = _mapper.Map<Request>(r);
-                var user = await _userService.GetUserAsync(authorization);
-                req.ManagerId = user.Id;
-                var res = await _requestService.Add(req);
-
-                await _requestService.LinkRequest(parentId, res.Id);
                 return _mapper.Map<RequestDTO>(res);
             }
             catch (Exception e)

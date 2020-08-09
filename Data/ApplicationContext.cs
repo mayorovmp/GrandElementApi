@@ -19,6 +19,7 @@ namespace GrandElementApi.Data
         public virtual DbSet<User> Users{ get; set; }
         public virtual DbSet<Session> Sessions { get; set; }
         public virtual DbSet<PartRequest> PartRequests { get; set; }
+        public virtual DbSet<RequestStatus> RequestStatuses { get; set; }
         public ApplicationContext()
         {
             //Database.EnsureCreated();
@@ -48,6 +49,7 @@ namespace GrandElementApi.Data
             OnPartRequestCreating(modelBuilder);
             OnUserCreating(modelBuilder);
             OnSessionCreating(modelBuilder);
+            OnRequestStatusesCreating(modelBuilder);
         }
         protected void OnCarModelCreating(ModelBuilder mb) {
 
@@ -196,6 +198,26 @@ namespace GrandElementApi.Data
             });
 
         }
+        protected void OnRequestStatusesCreating(ModelBuilder mb)
+        {
+            mb.Entity<RequestStatus>(entity =>
+            {
+                entity.ToTable("request_statuses");
+
+                entity.HasComment("Статусы заявок");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.Description)
+                    .HasColumnName("description")
+                    .HasColumnType("character varying");
+
+                entity.HasMany(rs => rs.Requests)
+                    .WithOne(r => r.RequestStatus)
+                    .HasForeignKey(r=>r.RequestStatusId);
+
+            });
+        }
         protected void OnSupplierCreating(ModelBuilder mb) {
             mb.Entity<Supplier>(entity =>
             {
@@ -328,7 +350,7 @@ namespace GrandElementApi.Data
                     .HasColumnType("numeric")
                     .HasComment("Стоимость доставки. freight_price * amount");
 
-                entity.Property(e => e.Status)
+                entity.Property(e => e.RequestStatusId)
                      .HasColumnName("status")
                      .HasColumnType("numeric");
 
@@ -399,6 +421,10 @@ namespace GrandElementApi.Data
                     .WithMany(p => p.Requests)
                     .HasForeignKey(d => d.ProductId)
                     .HasConstraintName("requests_products_id_fk");
+
+                entity.HasOne(d => d.RequestStatus)
+                    .WithMany(rs => rs.Requests)
+                    .HasConstraintName("requests_request_statuses_id_fk");
 
                 entity.HasOne(d => d.Supplier)
                     .WithMany(p => p.Requests)

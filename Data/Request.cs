@@ -5,11 +5,6 @@ using System.Threading.Tasks;
 
 namespace GrandElementApi.Data
 {
-    public enum RequestStatus
-    {
-        Active,
-        Completed,
-    }
     public class Request : BaseEntity
     {
         public Request()
@@ -17,7 +12,7 @@ namespace GrandElementApi.Data
             Parts = new HashSet<PartRequest>();
         }
         public int Id { get; set; }
-        public RequestStatus Status { get; set; }
+        public int RequestStatusId { get; set; }
         public int? ProductId { get; set; }
         public DateTime? DeliveryStart { get; set; }
         public int? DeliveryAddressId { get; set; }
@@ -52,5 +47,6 @@ namespace GrandElementApi.Data
         public virtual CarCategory CarCategory { get; set; }
         public virtual ICollection<PartRequest> Parts { get; set; }
         public virtual User Manager { get; set; }
+        public virtual RequestStatus RequestStatus { get; set; }
     }
 }

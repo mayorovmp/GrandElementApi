@@ -83,7 +83,6 @@ namespace GrandElementApi.Controllers
             {
                 _logger.LogError(e.ToString());
                 return Problem(e.Message);
-                return Problem(e.Message);
             }
         }
 

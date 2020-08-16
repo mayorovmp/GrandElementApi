@@ -2,6 +2,7 @@
 using GrandElementApi.Extensions;
 using GrandElementApi.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Npgsql;
 using System;
 using System.Collections.Generic;
@@ -57,10 +58,21 @@ namespace GrandElementApi.Services
             }
             return car;
         }
+        public async Task<List<Car>> Favorite(int lastDays, int limit)
+        {
+            using var db = new ApplicationContext();
+            var carsTask = db.Cars
+                .Where(c => c.Requests.Any(r => r.DeliveryStart >= DateTime.Now.AddDays(-lastDays)) && c.RowStatus == RowStatus.Active)
+                .OrderByDescending(c => c.Requests.Count(r => r.DeliveryStart >= DateTime.Now.AddDays(-lastDays)))
+                .Take(limit)
+                .ToListAsync();
+            return await carsTask;
+        }
         public async Task<List<Car>> AllCarsAsync()
         {
-            using (var db = new ApplicationContext()) {
-                return await db.Cars.Where(x => x.RowStatus == RowStatus.Active).Include(x=>x.CarCategory).ToListAsync();
+            using (var db = new ApplicationContext())
+            {
+                return await db.Cars.Where(x => x.RowStatus == RowStatus.Active).Include(x => x.CarCategory).ToListAsync();
             }
         }
     }

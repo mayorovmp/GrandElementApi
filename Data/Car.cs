@@ -1,4 +1,6 @@
 ﻿
+using System.Collections.Generic;
+
 namespace GrandElementApi.Data
 {
     public class Car : BaseEntity
@@ -18,5 +20,6 @@ namespace GrandElementApi.Data
         public int? Vat { get; set; }
 
         public virtual CarCategory CarCategory { get; set; }
+        public virtual List<Request> Requests { get; set; }
     }
 }

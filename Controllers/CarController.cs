@@ -42,6 +42,19 @@ namespace GrandElementApi.Controllers
             }
         }
 
+        [HttpGet("favorite")]
+        public async Task<ActionResult<List<CarDTO>>> Favorite([FromQuery] int lastDays, [FromQuery] int limit) {
+            try
+            {
+                var data = await _carService.Favorite(lastDays, limit);
+                return _mapper.Map<List<CarDTO>>(data);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return BadRequest(e.ToString());
+            }
+        }
         [HttpPost]
         public async Task<ActionResult<CarDTO>> Add(CarOnAddDTO car)
         {

@@ -97,6 +97,10 @@ namespace GrandElementApi.Data
                     .WithMany(p => p.Cars)
                     .HasForeignKey(d => d.CarCategoryId)
                     .HasConstraintName("cars_car_categories_id_fk");
+
+                entity.HasMany(rs => rs.Requests)
+                .WithOne(r => r.Car)
+                .HasForeignKey(r => r.CarId);
             });
         }
         protected void OnCarCategoryModelCreating(ModelBuilder modelBuilder)

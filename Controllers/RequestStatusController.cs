@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace GrandElementApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class RequestStatusController : ControllerBase
     {
@@ -21,7 +21,7 @@ namespace GrandElementApi.Controllers
 
         public RequestStatusController(ILogger<RequestStatusController> logger, IMapper mapper, RequestStatusService service)
         {
-            _logger = logger;
+            _logger = logger; 
             _requestStatusService = service;
             _mapper = mapper;
         }

@@ -31,7 +31,7 @@ namespace GrandElementApi.Controllers
         public async Task<ActionResult<List<CarDTO>>> Get()
         {
             try
-            {;
+            {
                 var data = await _carService.AllCarsAsync();
                 return _mapper.Map<List<CarDTO>>(data);
             }

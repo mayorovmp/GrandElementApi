@@ -131,17 +131,7 @@ where id = (
             await db.SaveChangesAsync();
             return r;
         }
-        public async Task LinkRequest(int parentId, int childId)
-        {
-            using var db = new ApplicationContext();
-            var p = new PartRequest()
-            {
-                ChildRequestId = childId,
-                ParentRequestId = parentId
-            };
-            db.Add(p);
-            await db.SaveChangesAsync();
-        }
+
         public async Task<List<Request>> GetNotCompletedRequestsAsync(int managerId, int limit, int offset)
         {
             using var db = new ApplicationContext();
@@ -149,36 +139,7 @@ where id = (
                 .Where(x => x.RowStatus == RowStatus.Active
                     && x.RequestStatus.Id != RequestStatus.COMPLETED
                     && (x.ManagerId == managerId))
-                .Skip(offset)
-                .Take(limit)
-                .Include(r=>r.Manager)
-                .Include(r=>r.Car)
-                .Include(r => r.CarCategory)
-                .Include(r => r.RequestStatus)
-                .Include(r=>r.Client)
-                    .ThenInclude(c => c.Addresses)
-                .Include(r => r.DeliveryAddress)
-                .Include(r => r.Supplier)
-                    .ThenInclude(s => s.Products)
-                .Include(r => r.Product)
                 .OrderBy(r => r.Id)
-                .ToListAsync();
-
-            res.ForEach(r => {
-                if (r.Client != null)
-                {
-                    r.Client.Addresses = r.Client.Addresses.Where(a => a.RowStatus == RowStatus.Active).ToList();
-                }
-            });
-            return res;
-        }
-        public async Task<List<Request>> GetCompletedRequestsAsync(int? managerId, int limit = 400, int offset = 0)
-        {
-            using var db = new ApplicationContext();
-            var res = await db.Requests
-                .Where(x => x.RowStatus == RowStatus.Active
-                    && x.RequestStatus.Id == RequestStatus.COMPLETED
-                    && (managerId.HasValue && x.ManagerId == managerId))
                 .Skip(offset)
                 .Take(limit)
                 .Include(r => r.Manager)
@@ -186,20 +147,31 @@ where id = (
                 .Include(r => r.CarCategory)
                 .Include(r => r.RequestStatus)
                 .Include(r => r.Client)
-                    .ThenInclude(c => c.Addresses)
                 .Include(r => r.DeliveryAddress)
                 .Include(r => r.Supplier)
-                    .ThenInclude(s => s.Products)
                 .Include(r => r.Product)
-                .OrderByDescending(r => r.Id)
                 .ToListAsync();
-
-            res.ForEach(r => {
-                if (r.Client != null)
-                {
-                    r.Client.Addresses = r.Client.Addresses.Where(a => a.RowStatus == RowStatus.Active).ToList();
-                }
-            });
+            return res;
+        }
+        public async Task<List<Request>> GetCompletedRequestsAsync(int managerId, int limit = 400, int offset = 0)
+        {
+            using var db = new ApplicationContext();
+            var res = await db.Requests
+                .Where(x => x.RowStatus == RowStatus.Active
+                    && x.RequestStatus.Id == RequestStatus.COMPLETED
+                    && (x.ManagerId == managerId))
+                .OrderByDescending(r => r.Id)
+                .Skip(offset)
+                .Take(limit)
+                .Include(r => r.Manager)
+                .Include(r => r.Car)
+                .Include(r => r.CarCategory)
+                .Include(r => r.RequestStatus)
+                .Include(r => r.Client)
+                .Include(r => r.DeliveryAddress)
+                .Include(r => r.Supplier)
+                .Include(r => r.Product)
+                .ToListAsync();
             return res;
         }
         public async Task<List<Request>> GetRequestsAsync(int managerId, DateTime dt)

@@ -148,7 +148,7 @@ namespace GrandElementApi.DTOs
                 .ForMember(
                     dest=>dest.RequestStatusId, 
                     opt=>opt.MapFrom(
-                        src => 0
+                        src => RequestStatus.NEW
                     )
                  )
                 .ForMember(d => d.CarVat, opt => opt.MapFrom(

@@ -8,6 +8,7 @@ using GrandElementApi.DTOs;
 using GrandElementApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 
 namespace GrandElementApi.Controllers
@@ -33,6 +34,24 @@ namespace GrandElementApi.Controllers
             try
             {
                 var data = await _carService.AllCarsAsync();
+                return _mapper.Map<List<CarDTO>>(data);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return BadRequest(e.ToString());
+            }
+        }
+
+        [HttpGet("search")]
+        public async Task<ActionResult<List<CarDTO>>> Search(
+            [FromQuery(Name = "name")][BindRequired] string name,
+            [FromQuery(Name = "limit")][BindRequired] int limit,
+            [FromQuery(Name = "offset")][BindRequired] int offset)
+        {
+            try
+            {
+                var data = await _carService.Search(name, limit, offset);
                 return _mapper.Map<List<CarDTO>>(data);
             }
             catch (Exception e)

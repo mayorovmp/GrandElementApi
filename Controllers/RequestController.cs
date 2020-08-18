@@ -122,13 +122,13 @@ namespace GrandElementApi.Controllers
             }
         }
 
-        [HttpPost("complete/{id}")]
-        public async Task<ActionResult<RequestDTO>> Complete(int id)
+        [HttpPost("set_status/{id}")]
+        public async Task<ActionResult> SetStatus(int id, [FromQuery][BindRequired] int statusId)
         {
             try
             {
-                var res = await _requestService.Complete(id);
-                return _mapper.Map<RequestDTO>(res);
+                var res = await _requestService.SetStatus(id, statusId);
+                return Ok();
             }
             catch (Exception e)
             {

@@ -78,29 +78,17 @@ namespace GrandElementApi.Services
                 await db.SaveChangesAsync();
             }
         }
-        public async Task<Request> Complete(int id) {
+        public async Task<Request> SetStatus(int id, int statusId) {
             using var db = new ApplicationContext();
             var r = await db.Requests.FindAsync(id);
 
-            if (r.IsLong == 1)
-            {
-                r.RequestStatusId = RequestStatus.COMPLETED;
-                await db.SaveChangesAsync();
-                return r;
-            }
-
-            if (r.AmountOut == null)
+            if (r.Amount == null)
                 throw new Exception("Не установлен объем на выходе.");
             if (r.RequestStatusId == RequestStatus.COMPLETED)
                 throw new Exception("Заявка уже закрыта.");
-            r.RequestStatusId = RequestStatus.COMPLETED;
 
-            var part = db.PartRequests.FirstOrDefault(x=>x.ChildRequestId == id);
-            if (part != null)
-            {
-                var root = await db.Requests.FindAsync(part.ParentRequestId);
-                root.AmountComplete += r.AmountOut.Value;
-            }
+            r.RequestStatusId = statusId;
+
             await db.SaveChangesAsync();
             return r;
         }

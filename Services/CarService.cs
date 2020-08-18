@@ -75,5 +75,17 @@ namespace GrandElementApi.Services
                 return await db.Cars.Where(x => x.RowStatus == RowStatus.Active).Include(x => x.CarCategory).ToListAsync();
             }
         }
+        public async Task<List<Car>> Search(string name, int limit, int offset)
+        {
+            using (var db = new ApplicationContext())
+            {
+                return await db.Cars
+                    .Where(x => x.Owner.ToLower().Contains(name.ToLower()) && x.RowStatus == RowStatus.Active)
+                    .OrderBy(x => x.Owner)
+                    .Skip(offset)
+                    .Take(limit)
+                    .Include(x => x.CarCategory).ToListAsync();
+            }
+        }
     }
 }

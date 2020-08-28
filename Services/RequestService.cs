@@ -84,33 +84,11 @@ namespace GrandElementApi.Services
 
             if (r.Amount == null)
                 throw new Exception("Не установлен объем на выходе.");
-            if (r.RequestStatusId == RequestStatus.COMPLETED)
-                throw new Exception("Заявка уже закрыта.");
 
             r.RequestStatusId = statusId;
 
             await db.SaveChangesAsync();
             return r;
-        }
-        private async Task UpdateWeightInLongReq(NpgsqlConnection conn, int childRequestId)
-        {
-            using (var cmd = new NpgsqlCommand(@"
-update requests set amount_complete = amount_complete + (
-    select r2.amount_out
-    from requests r2
-    where r2.id = @id
-    limit 1)
-where id = (
-    select pr.parent_request_id
-    from part_requests pr
-    where pr.child_request_id = @id
-    limit 1);
-", conn))   {
-                cmd.Parameters.AddRange(new[] {
-                        new NpgsqlParameter("id", childRequestId)
-                    });
-                await cmd.ExecuteNonQueryAsync();
-            }
         }
         public async Task<Request> Add(Request r)
         {

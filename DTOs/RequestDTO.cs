@@ -12,7 +12,7 @@ namespace GrandElementApi.DTOs
         // public string Comment { get; set; }
         // public decimal? AmountOut { get; set; }
         public DateTime? DeliveryStart { get; set; }
-        // public DateTime? DeliveryEnd { get; set; }
+        public DateTime? DeliveryEnd { get; set; }
         public bool IsLong { get; set; }
         // public decimal? PurchasePrice { get; set; }
         // public decimal? SellingPrice { get; set; }

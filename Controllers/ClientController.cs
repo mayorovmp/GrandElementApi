@@ -6,6 +6,7 @@ using GrandElementApi.Data;
 using GrandElementApi.DTOs;
 using GrandElementApi.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 
 namespace GrandElementApi.Controllers
@@ -40,11 +41,14 @@ namespace GrandElementApi.Controllers
             }
         }
         [HttpGet("search")]
-        public async Task<ActionResult<List<ClientDTO>>> Get(string name, int limit)
+        public async Task<ActionResult<List<ClientDTO>>> Get(
+            [FromQuery(Name = "name")][BindRequired] string name,
+            [FromQuery(Name = "limit")][BindRequired] int limit,
+            [FromQuery(Name = "offset")][BindRequired] int offset)
         {
             try
             {
-                var res = await _clientService.SearchClientsAsync(name, limit);
+                var res = await _clientService.SearchClientsAsync(name, limit, offset);
                 return _mapper.Map<List<ClientDTO>>(res);
             }
             catch (Exception e)

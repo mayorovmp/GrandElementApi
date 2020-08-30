@@ -82,8 +82,8 @@ namespace GrandElementApi.Services
             using var db = new ApplicationContext();
             var r = await db.Requests.FindAsync(id);
 
-            if (r.Amount == null)
-                throw new Exception("Не установлен объем на выходе.");
+            //if (r.Amount == null)
+            //    throw new Exception("Не установлен объем на выходе.");
 
             r.RequestStatusId = statusId;
 
@@ -105,7 +105,7 @@ namespace GrandElementApi.Services
                 .Where(x => x.RowStatus == RowStatus.Active
                     && x.RequestStatus.Id != RequestStatus.COMPLETED
                     && (x.ManagerId == managerId))
-                .OrderBy(r => r.Id)
+                .OrderBy(r => r.DeliveryStart).ThenBy(r=>r.RequestStatusId)
                 .Skip(offset)
                 .Take(limit)
                 .Include(r => r.Manager)
@@ -113,10 +113,16 @@ namespace GrandElementApi.Services
                 .Include(r => r.CarCategory)
                 .Include(r => r.RequestStatus)
                 .Include(r => r.Client)
+                    .ThenInclude(c => c.Addresses)
                 .Include(r => r.DeliveryAddress)
                 .Include(r => r.Supplier)
                 .Include(r => r.Product)
                 .ToListAsync();
+            foreach (var r in res)
+            {
+                if (r.Client != null)
+                    r.Client.Addresses = r.Client.Addresses.Where(a => a.RowStatus == RowStatus.Active).ToList();
+            }
             return res;
         }
         public async Task<List<Request>> GetCompletedRequestsAsync(int managerId, int limit = 400, int offset = 0)
@@ -126,7 +132,7 @@ namespace GrandElementApi.Services
                 .Where(x => x.RowStatus == RowStatus.Active
                     && x.RequestStatus.Id == RequestStatus.COMPLETED
                     && (x.ManagerId == managerId))
-                .OrderByDescending(r => r.Id)
+                .OrderByDescending(r => r.DeliveryStart)
                 .Skip(offset)
                 .Take(limit)
                 .Include(r => r.Manager)
@@ -134,10 +140,16 @@ namespace GrandElementApi.Services
                 .Include(r => r.CarCategory)
                 .Include(r => r.RequestStatus)
                 .Include(r => r.Client)
+                    .ThenInclude(c => c.Addresses)
                 .Include(r => r.DeliveryAddress)
                 .Include(r => r.Supplier)
                 .Include(r => r.Product)
                 .ToListAsync();
+            foreach (var r in res)
+            {
+                if(r.Client != null)
+                    r.Client.Addresses = r.Client.Addresses.Where(a => a.RowStatus == RowStatus.Active).ToList();
+            }
             return res;
         }
         public async Task<List<Request>> GetRequestsAsync(int managerId, DateTime dt)

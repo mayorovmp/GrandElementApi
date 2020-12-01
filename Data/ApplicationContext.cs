@@ -216,6 +216,10 @@ namespace GrandElementApi.Data
                     .HasColumnName("description")
                     .HasColumnType("character varying");
 
+                entity.Property(e => e.OrderBy)
+                    .HasColumnName("order_by")
+                    .HasColumnType("numeric");
+
                 entity.HasMany(rs => rs.Requests)
                     .WithOne(r => r.RequestStatus)
                     .HasForeignKey(r=>r.RequestStatusId);

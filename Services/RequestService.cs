@@ -105,7 +105,7 @@ namespace GrandElementApi.Services
                 .Where(x => x.RowStatus == RowStatus.Active
                     && x.RequestStatus.Id != RequestStatus.COMPLETED
                     && (x.ManagerId == managerId))
-                .OrderBy(r => r.DeliveryStart).ThenBy(r=>r.RequestStatusId)
+                .OrderByDescending(r => r.DeliveryStart).ThenBy(r => r.RequestStatus.OrderBy)
                 .Skip(offset)
                 .Take(limit)
                 .Include(r => r.Manager)

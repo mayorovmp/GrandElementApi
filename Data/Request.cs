@@ -9,7 +9,6 @@ namespace GrandElementApi.Data
     {
         public Request()
         {
-            Parts = new HashSet<PartRequest>();
         }
         public int Id { get; set; }
         public int RequestStatusId { get; set; }
@@ -30,14 +29,13 @@ namespace GrandElementApi.Data
         public decimal? Profit { get; set; }
         public int? ClientId { get; set; }
         public int? ManagerId { get; set; }
-        public decimal? AmountIn { get; set; }
         public int? CarCategoryId { get; set; }
         public decimal? Amount { get; set; }
         public decimal? Reward { get; set; }
         public decimal? SellingCost { get; set; }
         public int? CarId { get; set; }
         public int? CarVat { get; set; }
-        public int? SupplierVat { get; set; }
+        public int? ParentId { get; set; }
         public decimal AmountComplete { get; set; }
         public virtual Car Car { get; set; }
         public virtual Client Client { get; set; }
@@ -45,8 +43,8 @@ namespace GrandElementApi.Data
         public virtual Product Product { get; set; }
         public virtual Supplier Supplier { get; set; }
         public virtual CarCategory CarCategory { get; set; }
-        public virtual ICollection<PartRequest> Parts { get; set; }
         public virtual User Manager { get; set; }
         public virtual RequestStatus RequestStatus { get; set; }
+        public virtual Request Parent { get; set; }
     }
 }

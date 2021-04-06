@@ -18,7 +18,6 @@ namespace GrandElementApi.Data
         public virtual DbSet<Request> Requests { get; set; }
         public virtual DbSet<User> Users{ get; set; }
         public virtual DbSet<Session> Sessions { get; set; }
-        public virtual DbSet<PartRequest> PartRequests { get; set; }
         public virtual DbSet<RequestStatus> RequestStatuses { get; set; }
         public ApplicationContext()
         {
@@ -46,7 +45,6 @@ namespace GrandElementApi.Data
             OnSupplierCreating(modelBuilder);
             OnSupplierProductCreating(modelBuilder);
             OnRequestCreating(modelBuilder);
-            OnPartRequestCreating(modelBuilder);
             OnUserCreating(modelBuilder);
             OnSessionCreating(modelBuilder);
             OnRequestStatusesCreating(modelBuilder);
@@ -319,10 +317,6 @@ namespace GrandElementApi.Data
                     .HasDefaultValueSql("0")
                     .HasComment("вывезенный объем");
 
-                entity.Property(e => e.AmountIn)
-                    .HasColumnName("amount_in")
-                    .HasColumnType("numeric");
-
                 entity.Property(e => e.AmountOut)
                     .HasColumnName("amount_out")
                     .HasColumnType("numeric")
@@ -406,10 +400,6 @@ namespace GrandElementApi.Data
 
                 entity.Property(e => e.SupplierId).HasColumnName("supplier_id");
 
-                entity.Property(e => e.SupplierVat)
-                    .HasColumnName("supplier_vat")
-                    .HasComment("1-ндс вкл, 0-ндс выкл");
-
                 entity.Property(e => e.Unit)
                     .HasColumnName("unit")
                     .HasColumnType("character varying")
@@ -443,37 +433,13 @@ namespace GrandElementApi.Data
                     .WithMany(m => m.Requests)
                     .HasForeignKey(d => d.ManagerId)
                     .HasConstraintName("requests_users_id_fk");
-            });
 
-        }
-        protected void OnPartRequestCreating(ModelBuilder mb)
-        {
+                entity.Property(e => e.ParentId).HasColumnName("parent_id");
 
-            mb.Entity<PartRequest>(entity =>
-            {
-                entity.Property(e => e.Id).HasColumnName("id");
-
-                entity.ToTable("part_requests");
-
-                entity.HasComment("Соответствие долгосрочных заявок");
-
-                entity.Property(e => e.ChildRequestId)
-                    .HasColumnName("child_request_id")
-                    .HasComment("Поражденная заявка");
-
-                entity.Property(e => e.ParentRequestId)
-                    .HasColumnName("parent_request_id")
-                    .HasComment("Долгосрочная заявка");
-
-                entity.HasOne(d => d.ChildRequest)
-                    .WithMany(r=>r.Parts)
-                    .HasForeignKey(d => d.ChildRequestId)
-                    .HasConstraintName("part_requests_requests_id_fk_2");
-
-                entity.HasOne(d => d.ParentRequest)
+                entity.HasOne(d => d.Parent)
                     .WithMany()
-                    .HasForeignKey(d => d.ParentRequestId)
-                    .HasConstraintName("part_requests_requests_id_fk");
+                    .HasForeignKey(d=>d.ParentId)
+                    .HasConstraintName("requests_requests_id_fk");
             });
         }
         protected void OnUserCreating(ModelBuilder mb)

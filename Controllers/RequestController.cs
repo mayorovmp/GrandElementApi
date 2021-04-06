@@ -66,25 +66,26 @@ namespace GrandElementApi.Controllers
                 return Problem(e.Message);
             }
         }
-        //[HttpGet("last")]
-        //public async Task<ActionResult<RequestDTO>> Get(
-        //    [FromQuery(Name ="clientId")]int? clientId, 
-        //    [FromQuery(Name = "addressId")]int? addressId,
-        //    [FromQuery(Name = "productId")]int? productId,
-        //    [FromQuery(Name = "supplierId")]int? supplierId,
-        //    [FromQuery(Name = "carId")]int? carId)
-        //{
-        //    try
-        //    {
-        //        var requests = await _requestService.GetLastRequest(clientId, addressId, productId, supplierId, carId);
-        //        return _mapper.Map<RequestDTO>(requests);
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        _logger.LogError(e.ToString());
-        //        return Problem(e.Message);
-        //    }
-        //}
+
+        [HttpGet("last")]
+        public async Task<ActionResult<RequestDTO>> Get(
+            [FromQuery(Name = "clientId")] int? clientId,
+            [FromQuery(Name = "addressId")] int? addressId,
+            [FromQuery(Name = "productId")] int? productId,
+            [FromQuery(Name = "supplierId")] int? supplierId,
+            [FromQuery(Name = "carId")] int? carId)
+        {
+            try
+            {
+                var requests = await _requestService.GetLastRequest(clientId, addressId, productId, supplierId, carId);
+                return _mapper.Map<RequestDTO>(requests);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return Problem(e.Message);
+            }
+        }
 
         [HttpGet("excel/{date}")]
         public async Task<IActionResult> GetExcelByDate(DateTime date, [FromHeader]Guid authorization)

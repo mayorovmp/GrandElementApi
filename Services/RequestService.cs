@@ -1,16 +1,11 @@
 ﻿using GrandElementApi.Data;
-using GrandElementApi.Extensions;
 using GrandElementApi.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
-using NpgsqlTypes;
 using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Transactions;
 
 namespace GrandElementApi.Services
 {
@@ -55,7 +50,6 @@ namespace GrandElementApi.Services
                     worksheet.Cells[row + 2, col++].Value = requests[row].SellingPrice;
                     worksheet.Cells[row + 2, col++].Value = requests[row].FreightPrice;
                     worksheet.Cells[row + 2, col++].Value = requests[row].Unit;
-                    worksheet.Cells[row + 2, col++].Value = requests[row].AmountIn;
                     worksheet.Cells[row + 2, col++].Value = requests[row].AmountOut;
                     worksheet.Cells[row + 2, col++].Value = requests[row].SellingCost;
                     worksheet.Cells[row + 2, col++].Value = requests[row].Income;
@@ -105,7 +99,7 @@ namespace GrandElementApi.Services
                 .Where(x => x.RowStatus == RowStatus.Active
                     && x.RequestStatus.Id != RequestStatus.COMPLETED
                     && (x.ManagerId == managerId))
-                .OrderByDescending(r => r.DeliveryStart).ThenBy(r => r.RequestStatus.OrderBy)
+                .OrderBy(r => r.DeliveryStart).ThenBy(r => r.RequestStatus.OrderBy)
                 .Skip(offset)
                 .Take(limit)
                 .Include(r => r.Manager)
@@ -188,7 +182,6 @@ namespace GrandElementApi.Services
             r.DeliveryAddressId = item.DeliveryAddressId;
             r.Comment = item.Comment;
             r.SupplierId = item.SupplierId;
-            r.AmountIn = item.AmountIn;
             r.AmountOut = item.AmountOut;
             r.Amount = item.Amount;
             r.Income = item.Income;
@@ -206,7 +199,6 @@ namespace GrandElementApi.Services
             r.SellingCost = item.SellingCost;
             r.CarId = item.CarId;
             r.CarVat = item.CarVat;
-            r.SupplierVat = item.SupplierVat;
 
             await db.SaveChangesAsync();
         }

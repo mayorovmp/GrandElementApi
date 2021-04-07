@@ -91,7 +91,6 @@ namespace GrandElementApi.Services
             await db.SaveChangesAsync();
             return r;
         }
-
         public async Task<List<Request>> GetNotCompletedRequestsAsync(int managerId, int limit, int offset)
         {
             using var db = new ApplicationContext();
@@ -177,28 +176,24 @@ namespace GrandElementApi.Services
             var r = await db.Requests.FirstOrDefaultAsync(x => x.Id == item.Id);
             if (r == null)
                 throw new Exception("Заявка не найдена");
+            if (r.ParentId != null)
+            {
+                var parent = await db.Requests.FirstOrDefaultAsync(x => x.Id == item.ParentId);
+                parent.Amount += r.Amount - item.Amount;
+            }
             r.ProductId = item.ProductId;
             r.DeliveryStart = item.DeliveryStart;
             r.DeliveryAddressId = item.DeliveryAddressId;
             r.Comment = item.Comment;
             r.SupplierId = item.SupplierId;
-            r.AmountOut = item.AmountOut;
             r.Amount = item.Amount;
-            r.Income = item.Income;
             r.DeliveryEnd = item.DeliveryEnd;
             r.IsLong = item.IsLong;
-            r.PurchasePrice = item.PurchasePrice;
-            r.SellingPrice = item.SellingPrice;
-            r.FreightPrice = item.FreightPrice;
-            r.Unit = item.Unit;
-            r.FreightCost = item.FreightCost;
             r.Profit = item.Profit;
             r.ClientId = item.ClientId;
             r.CarCategoryId = item.CarCategoryId;
             r.Reward = item.Reward;
-            r.SellingCost = item.SellingCost;
             r.CarId = item.CarId;
-            r.CarVat = item.CarVat;
 
             await db.SaveChangesAsync();
         }

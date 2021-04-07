@@ -23,13 +23,6 @@ namespace GrandElementApi.DTOs
         public string Comment { get; set; }
         public DateTime? DeliveryStart { get; set; }
         public DateTime? DeliveryEnd { get; set; }
-        public bool IsLong { get; set; }
-        public decimal? PurchasePrice { get; set; }
-        public decimal? SellingPrice { get; set; }
-        public decimal? FreightPrice { get; set; }
-        public string Unit { get; set; }
-        public decimal? FreightCost { get; set; }
-        public decimal? Income { get; set; }
         public decimal? Profit { get; set; }
         public int? ClientId { get; set; }
         public int? CarCategoryId { get; set; }
@@ -39,25 +32,15 @@ namespace GrandElementApi.DTOs
         public int? SupplierId { get; set; }
         public decimal? Amount { get; set; }
         public decimal? Reward { get; set; }
-        public decimal? SellingCost { get; set; }
-        public bool? CarVat { get; set; }
-        public bool? SupplierVat { get; set; }
         public int? ParentId { get; set; }
     }
     public class RequestOnEditDTO
     {
         public int Id { get; set; }
         public string Comment { get; set; }
-        public decimal? AmountOut { get; set; }
         public DateTime? DeliveryStart { get; set; }
         public DateTime? DeliveryEnd { get; set; }
         public bool IsLong { get; set; }
-        public decimal? PurchasePrice { get; set; }
-        public decimal? Income { get; set; }
-        public decimal? SellingPrice { get; set; }
-        public decimal? FreightPrice { get; set; }
-        public string Unit { get; set; }
-        public decimal? FreightCost { get; set; }
         public decimal? Profit { get; set; }
         public int? ClientId { get; set; }
         public int? CarCategoryId { get; set; }
@@ -67,9 +50,6 @@ namespace GrandElementApi.DTOs
         public int? SupplierId { get; set; }
         public decimal? Amount { get; set; }
         public decimal? Reward { get; set; }
-        public decimal? SellingCost { get; set; }
-        public bool? CarVat { get; set; }
-        public bool? SupplierVat { get; set; }
         public int? ParentId { get; set; }
     }
 }

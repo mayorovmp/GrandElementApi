@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace GrandElementApi.DTOs
 {
@@ -23,6 +23,7 @@ namespace GrandElementApi.DTOs
         public string Comment { get; set; }
         public DateTime? DeliveryStart { get; set; }
         public DateTime? DeliveryEnd { get; set; }
+        public bool IsLong { get; set; }
         public decimal? Profit { get; set; }
         public int? ClientId { get; set; }
         public int? CarCategoryId { get; set; }

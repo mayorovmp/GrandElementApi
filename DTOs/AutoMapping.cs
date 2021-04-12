@@ -74,30 +74,7 @@ namespace GrandElementApi.DTOs
                     opt => opt.MapFrom(
                         (src, _) => { return src.IsLong == 1; }
                     )
-                )
-                //.ForMember(d=>d.CarVat, opt=>opt.MapFrom(
-                //    (src, _) =>
-                //    {
-                //        bool? res;
-                //        if (!src.CarVat.HasValue)
-                //            res = null;
-                //        else
-                //            res = src.CarVat.Value == 1 ? true : false;
-                //        return res;
-                //    }
-                //))
-                //.ForMember(d => d.SupplierVat, opt => opt.MapFrom(
-                //      (src, _) =>
-                //      {
-                //          bool? res;
-                //          if (!src.SupplierVat.HasValue)
-                //              res = null;
-                //          else
-                //              res = src.SupplierVat.Value == 1 ? true : false;
-                //          return res;
-                //      }
-                //  ))
-                ;
+                );
 
             CreateMap<RequestOnAddDTO, Request>()
                 .ForMember(
@@ -154,18 +131,6 @@ namespace GrandElementApi.DTOs
                     opt => opt.MapFrom(
                         src => RequestStatus.NEW
                     )
-                 )
-                .ForMember(d => d.CarVat, opt => opt.MapFrom(
-                      (src, _) =>
-                      {
-                          int? res;
-                          if (!src.CarVat.HasValue)
-                              res = null;
-                          else
-                              res = src.CarVat.Value ? 1 : 0;
-                          return res;
-                      }
-                  )
                 );
 
             CreateMap<RequestOnEditDTO, Request>()
@@ -222,18 +187,7 @@ namespace GrandElementApi.DTOs
                     opt => opt.MapFrom(
                         src => RequestStatus.NEW
                     )
-                )
-                .ForMember(d => d.CarVat, opt => opt.MapFrom(
-                      (src, _) =>
-                      {
-                          int? res;
-                          if (!src.CarVat.HasValue)
-                              res = null;
-                          else
-                              res = src.CarVat.Value ? 1 : 0;
-                          return res;
-                      }
-                  ));
+                );
         }
         private void CreateMapForCarCategory()
         {

@@ -42,7 +42,8 @@ namespace GrandElementApi.Services
         public async Task<Car> EditCarAsync(Car car)
         {
             using (var db = new ApplicationContext()) {
-                var storedCar = db.Cars.Where(x => x.Id == car.Id).FirstOrDefault();
+                var storedCar = db.Cars.Where(x => x.Id == car.Id)
+                    .Include(x => x.CarNumbers).FirstOrDefault();
                 if (storedCar == null)
                 {
                     throw new Exception("Идентификатор перевозчика не найден.");
@@ -54,6 +55,8 @@ namespace GrandElementApi.Services
                 storedCar.Contacts = car.Contacts;
                 storedCar.CarCategoryId = car.CarCategoryId;
                 storedCar.CarCategory = car.CarCategory;
+                storedCar.CarNumbers.RemoveAll(cn => !car.CarNumbers.Contains(cn));
+                storedCar.CarNumbers.AddRange(car.CarNumbers.FindAll(cn => !storedCar.CarNumbers.Contains(cn)));
                 await db.SaveChangesAsync();
             }
             return car;
@@ -65,6 +68,7 @@ namespace GrandElementApi.Services
                 .Where(c => c.Requests.Any(r => r.DeliveryStart >= DateTime.Now.AddDays(-lastDays)) && c.RowStatus == RowStatus.Active)
                 .OrderByDescending(c => c.Requests.Count(r => r.DeliveryStart >= DateTime.Now.AddDays(-lastDays)))
                 .Take(limit)
+                .Include(c => c.CarNumbers)
                 .ToListAsync();
             return await carsTask;
         }
@@ -72,7 +76,10 @@ namespace GrandElementApi.Services
         {
             using (var db = new ApplicationContext())
             {
-                return await db.Cars.Where(x => x.RowStatus == RowStatus.Active).Include(x => x.CarCategory).ToListAsync();
+                return await db.Cars.Where(x => x.RowStatus == RowStatus.Active)
+                    .Include(x => x.CarCategory)
+                    .Include(x => x.CarNumbers)
+                    .ToListAsync();
             }
         }
         public async Task<List<Car>> Search(string name, int limit, int offset)
@@ -84,6 +91,7 @@ namespace GrandElementApi.Services
                     .OrderBy(x => x.Owner)
                     .Skip(offset)
                     .Take(limit)
+                    .Include(x => x.CarNumbers)
                     .Include(x => x.CarCategory).ToListAsync();
             }
         }

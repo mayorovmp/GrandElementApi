@@ -1,4 +1,6 @@
-﻿namespace GrandElementApi.DTOs
+﻿using System.Collections.Generic;
+
+namespace GrandElementApi.DTOs
 {
     public class CarDTO
     {
@@ -9,6 +11,7 @@
         public string Unit { get; set; }
         public bool Vat { get; set; }
         public virtual CarCategoryDTO CarCategory { get; set; }
+        public virtual ICollection<CarNumberDTO> CarNumbers { get; set; }
     }
 
     public class CarOnAddDTO
@@ -19,5 +22,6 @@
         public string Unit { get; set; }
         public bool Vat { get; set; }
         public virtual CarCategoryDTO CarCategory { get; set; }
+        public virtual ICollection<CarNumberDTO> CarNumbers { get; set; }
     }
 }

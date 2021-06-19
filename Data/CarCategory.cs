@@ -4,7 +4,6 @@ namespace GrandElementApi.Data
 {
     public class CarCategory : BaseEntity
     {
-
         public CarCategory()
         {
             Cars = new HashSet<Car>();

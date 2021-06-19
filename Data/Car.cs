@@ -19,5 +19,6 @@ namespace GrandElementApi.Data
         public int? Vat { get; set; }
         public virtual CarCategory CarCategory { get; set; }
         public virtual List<Request> Requests { get; set; }
+        public virtual List<CarNumber> CarNumbers { get; set; }
     }
 }

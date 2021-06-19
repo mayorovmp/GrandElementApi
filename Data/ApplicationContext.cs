@@ -8,6 +8,7 @@ namespace GrandElementApi.Data
     {
         public static readonly ILoggerFactory _consoleLoggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
         public virtual DbSet<Car> Cars { get; set; }
+        public virtual DbSet<CarNumber> CarNumbers { get; set; }
         public virtual DbSet<CarCategory> CarCategories { get; set; }
         public virtual DbSet<Product> Products { get; set; }
         public virtual DbSet<DeliveryContact> DeliveryContacts { get; set; }
@@ -48,6 +49,7 @@ namespace GrandElementApi.Data
             OnUserCreating(modelBuilder);
             OnSessionCreating(modelBuilder);
             OnRequestStatusesCreating(modelBuilder);
+            OnCarNumberModelCreating(modelBuilder);
         }
         protected void OnCarModelCreating(ModelBuilder mb) {
 
@@ -97,8 +99,8 @@ namespace GrandElementApi.Data
                     .HasConstraintName("cars_car_categories_id_fk");
 
                 entity.HasMany(rs => rs.Requests)
-                .WithOne(r => r.Car)
-                .HasForeignKey(r => r.CarId);
+                    .WithOne(r => r.Car)
+                    .HasForeignKey(r => r.CarId);
             });
         }
         protected void OnCarCategoryModelCreating(ModelBuilder modelBuilder)
@@ -109,6 +111,21 @@ namespace GrandElementApi.Data
                 .Property(c => c.Id).HasColumnName("id");
             modelBuilder.Entity<CarCategory>()
                 .Property(c => c.Name).HasColumnName("name");
+        }
+        protected void OnCarNumberModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<CarNumber>()
+                .ToTable("car_numbers");
+            modelBuilder.Entity<CarNumber>()
+                .Property(c => c.Id).HasColumnName("id");
+            modelBuilder.Entity<CarNumber>()
+                .Property(c => c.Name).HasColumnName("name");
+            modelBuilder.Entity<CarNumber>()
+                .Property(c => c.CarId).HasColumnName("car_id");
+
+            modelBuilder.Entity<CarNumber>().HasOne(cn => cn.Car)
+                .WithMany(c => c.CarNumbers)
+                .HasForeignKey(c => c.CarId);
         }
         protected void OnProductModelCreating(ModelBuilder modelBuilder)
         {

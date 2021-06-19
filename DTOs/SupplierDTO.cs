@@ -12,7 +12,6 @@ namespace GrandElementApi.DTOs
         public string Address { get; set; }
         public string Name { get; set; }
         public bool Vat { get; set; }
-
         public virtual ICollection<SupplierProductDTO> Products { get; set; }
     }
 

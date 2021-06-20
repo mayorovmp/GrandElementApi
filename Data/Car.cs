@@ -14,10 +14,7 @@ namespace GrandElementApi.Data
         public string Owner { get; set; }
         public string Contacts { get; set; }
         public string Comments { get; set; }
-        public int? CarCategoryId { get; set; }
-        public string Unit { get; set; }
         public int? Vat { get; set; }
-        public virtual CarCategory CarCategory { get; set; }
         public virtual List<Request> Requests { get; set; }
         public virtual List<CarNumber> CarNumbers { get; set; }
     }

@@ -30,6 +30,7 @@ namespace GrandElementApi.Data
         public int? ClientId { get; set; }
         public int? ManagerId { get; set; }
         public int? CarCategoryId { get; set; }
+        public int? CarNumberId { get; set; }
         public decimal? Amount { get; set; }
         public decimal? Reward { get; set; }
         public decimal? SellingCost { get; set; }
@@ -42,7 +43,6 @@ namespace GrandElementApi.Data
         public virtual DeliveryAddress DeliveryAddress { get; set; }
         public virtual Product Product { get; set; }
         public virtual Supplier Supplier { get; set; }
-        public virtual CarCategory CarCategory { get; set; }
         public virtual User Manager { get; set; }
         public virtual RequestStatus RequestStatus { get; set; }
         public virtual Request Parent { get; set; }

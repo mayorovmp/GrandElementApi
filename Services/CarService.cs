@@ -33,7 +33,6 @@ namespace GrandElementApi.Services
         public async Task<Car> AddCarAsync(Car car) {
             using (var db = new ApplicationContext())
             {
-                db.CarCategories.Attach(car.CarCategory);
                 db.Cars.Add(car);
                 await db.SaveChangesAsync();
                 return car;
@@ -49,12 +48,9 @@ namespace GrandElementApi.Services
                     throw new Exception("Идентификатор перевозчика не найден.");
                 }
                 storedCar.Owner = car.Owner;
-                storedCar.Unit = car.Unit;
                 storedCar.Vat = car.Vat;
                 storedCar.Comments = car.Comments;
                 storedCar.Contacts = car.Contacts;
-                storedCar.CarCategoryId = car.CarCategoryId;
-                storedCar.CarCategory = car.CarCategory;
                 storedCar.CarNumbers.RemoveAll(cn => !car.CarNumbers.Contains(cn));
                 storedCar.CarNumbers.AddRange(car.CarNumbers.FindAll(cn => !storedCar.CarNumbers.Contains(cn)));
                 await db.SaveChangesAsync();
@@ -77,7 +73,6 @@ namespace GrandElementApi.Services
             using (var db = new ApplicationContext())
             {
                 return await db.Cars.Where(x => x.RowStatus == RowStatus.Active)
-                    .Include(x => x.CarCategory)
                     .Include(x => x.CarNumbers)
                     .ToListAsync();
             }
@@ -92,7 +87,7 @@ namespace GrandElementApi.Services
                     .Skip(offset)
                     .Take(limit)
                     .Include(x => x.CarNumbers)
-                    .Include(x => x.CarCategory).ToListAsync();
+                    .ToListAsync();
             }
         }
     }

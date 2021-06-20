@@ -9,7 +9,6 @@ namespace GrandElementApi.Data
         public static readonly ILoggerFactory _consoleLoggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
         public virtual DbSet<Car> Cars { get; set; }
         public virtual DbSet<CarNumber> CarNumbers { get; set; }
-        public virtual DbSet<CarCategory> CarCategories { get; set; }
         public virtual DbSet<Product> Products { get; set; }
         public virtual DbSet<DeliveryContact> DeliveryContacts { get; set; }
         public virtual DbSet<DeliveryAddress> DeliveryAddresses { get; set; }
@@ -37,7 +36,6 @@ namespace GrandElementApi.Data
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            OnCarCategoryModelCreating(modelBuilder);
             OnProductModelCreating(modelBuilder);
             OnCarModelCreating(modelBuilder);
             OnDeliveryContactCreating(modelBuilder);
@@ -61,10 +59,6 @@ namespace GrandElementApi.Data
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
-                entity.Property(e => e.CarCategoryId)
-                    .HasColumnName("car_category_id")
-                    .HasComment("Категория машины");
-
                 entity.Property(e => e.Comments)
                     .HasColumnName("comments")
                     .HasColumnType("character varying")
@@ -84,33 +78,14 @@ namespace GrandElementApi.Data
                     .HasColumnType("character varying")
                     .HasComment("Владелец автомобиля");
 
-                entity.Property(e => e.Unit)
-                    .HasColumnName("unit")
-                    .HasColumnType("character varying")
-                    .HasComment("Еденица измерения");
-
                 entity.Property(e => e.Vat)
                     .HasColumnName("vat")
                     .HasComment("НДС(value added tax). 1-включен; 0-невключен");
-
-                entity.HasOne(d => d.CarCategory)
-                    .WithMany(p => p.Cars)
-                    .HasForeignKey(d => d.CarCategoryId)
-                    .HasConstraintName("cars_car_categories_id_fk");
 
                 entity.HasMany(rs => rs.Requests)
                     .WithOne(r => r.Car)
                     .HasForeignKey(r => r.CarId);
             });
-        }
-        protected void OnCarCategoryModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<CarCategory>()
-                .ToTable("car_categories");
-            modelBuilder.Entity<CarCategory>()
-                .Property(c => c.Id).HasColumnName("id");
-            modelBuilder.Entity<CarCategory>()
-                .Property(c => c.Name).HasColumnName("name");
         }
         protected void OnCarNumberModelCreating(ModelBuilder modelBuilder)
         {
@@ -388,6 +363,8 @@ namespace GrandElementApi.Data
                     .HasComment("Признак долгосрочного заказа");
 
                 entity.Property(e => e.ManagerId).HasColumnName("manager_id");
+
+                entity.Property(e => e.CarNumberId).HasColumnName("car_number_id");
 
                 entity.Property(e => e.ProductId).HasColumnName("product_id");
 

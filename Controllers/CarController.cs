@@ -78,8 +78,6 @@ namespace GrandElementApi.Controllers
         {
             if(car.Owner == null)
                 return ValidationProblem("Укажите владельца");
-            if (car.CarCategory?.Id == null)
-                return ValidationProblem("Укажите категорию");
             try
             {
                 var data = await _carService.AddCarAsync(_mapper.Map<Car>(car));

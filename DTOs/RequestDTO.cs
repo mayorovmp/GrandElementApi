@@ -11,6 +11,7 @@ namespace GrandElementApi.DTOs
         public bool IsLong { get; set; }
         public decimal? Amount { get; set; }
         public virtual CarDTO Car { get; set; }
+        public int? CarNumberId { get; set; }
         public virtual ClientDTO Client { get; set; }
         public virtual DeliveryAddressDTO DeliveryAddress { get; set; }
         public virtual ProductDTO Product { get; set; }
@@ -26,8 +27,8 @@ namespace GrandElementApi.DTOs
         public bool IsLong { get; set; }
         public decimal? Profit { get; set; }
         public int? ClientId { get; set; }
-        public int? CarCategoryId { get; set; }
         public int? CarId { get; set; }
+        public int? CarNumberId { get; set; }
         public int? DeliveryAddressId { get; set; }
         public int? ProductId { get; set; }
         public int? SupplierId { get; set; }
@@ -44,8 +45,8 @@ namespace GrandElementApi.DTOs
         public bool IsLong { get; set; }
         public decimal? Profit { get; set; }
         public int? ClientId { get; set; }
-        public int? CarCategoryId { get; set; }
         public int? CarId { get; set; }
+        public int? CarNumberId { get; set; }
         public int? DeliveryAddressId { get; set; }
         public int? ProductId { get; set; }
         public int? SupplierId { get; set; }

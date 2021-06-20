@@ -37,7 +37,6 @@ namespace GrandElementApi
             services.AddDbContext<ApplicationContext>(op => op.UseNpgsql(conn));
             services.AddAutoMapper(typeof(Startup));
             services.AddCors();
-            services.AddSingleton<ICarCategoryService, CarCategoryService>();
             services.AddSingleton<ISupplierService, SupplierService>();
             services.AddSingleton<IUserService, UserService>();
             services.AddSingleton<ProductService, ProductService>();

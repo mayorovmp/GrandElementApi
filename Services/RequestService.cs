@@ -45,7 +45,6 @@ namespace GrandElementApi.Services
                     worksheet.Cells[row + 2, col++].Value = requests[row].DeliveryAddress?.Name;
                     worksheet.Cells[row + 2, col++].Value = requests[row].Product?.Name;
                     worksheet.Cells[row + 2, col++].Value = requests[row].Supplier?.Name;
-                    worksheet.Cells[row + 2, col++].Value = requests[row].CarCategory?.Name;
                     worksheet.Cells[row + 2, col++].Value = requests[row].PurchasePrice;
                     worksheet.Cells[row + 2, col++].Value = requests[row].SellingPrice;
                     worksheet.Cells[row + 2, col++].Value = requests[row].FreightPrice;
@@ -103,7 +102,7 @@ namespace GrandElementApi.Services
                 .Take(limit)
                 .Include(r => r.Manager)
                 .Include(r => r.Car)
-                .Include(r => r.CarCategory)
+                    .ThenInclude(c => c.CarNumbers)
                 .Include(r => r.RequestStatus)
                 .Include(r => r.Client)
                     .ThenInclude(c => c.Addresses)
@@ -130,7 +129,7 @@ namespace GrandElementApi.Services
                 .Take(limit)
                 .Include(r => r.Manager)
                 .Include(r => r.Car)
-                .Include(r => r.CarCategory)
+                    .ThenInclude(c => c.CarNumbers)
                 .Include(r => r.RequestStatus)
                 .Include(r => r.Client)
                     .ThenInclude(c => c.Addresses)
@@ -152,7 +151,7 @@ namespace GrandElementApi.Services
                 .Where(x => x.RowStatus == RowStatus.Active && x.DeliveryStart <= dt && dt <= x.DeliveryEnd && x.ManagerId == managerId)
                 .Include(r => r.Manager)
                 .Include(r => r.Car)
-                .Include(r => r.CarCategory)
+                    .ThenInclude(c => c.CarNumbers)
                 .Include(r => r.Client)
                     .ThenInclude(c=>c.Addresses)
                 .Include(r => r.DeliveryAddress)
@@ -203,7 +202,7 @@ namespace GrandElementApi.Services
             var res = await db.Requests
                 .Include(r => r.Manager)
                 .Include(r => r.Car)
-                .Include(r => r.CarCategory)
+                    .ThenInclude(c => c.CarNumbers)
                 .Include(r => r.Client)
                     .ThenInclude(c => c.Addresses)
                 .Include(r => r.DeliveryAddress)
